@@ -1266,7 +1266,7 @@ body {
               <div class="diff-btn-title">レベル１</div>
               <div class="diff-btn-desc" id="diff-easy-desc">小さめの数でれんしゅう</div>
               <div class="diff-btn-xp">+8 XP / 問 · 🎮 10問正解で1分GET</div>
-              <div class="diff-btn-cap" id="diff-easy-cap">今週のこり: 5分 / 5分</div>
+              <div class="diff-btn-cap" id="diff-easy-cap">今日のこり: 20分 / 20分</div>
             </div>
             <div class="diff-play-btn">▶</div>
           </div>
@@ -1277,7 +1277,7 @@ body {
               <div class="diff-btn-title">レベル3</div>
               <div class="diff-btn-desc" id="diff-normal-desc">4ケタの計算にチャレンジ</div>
               <div class="diff-btn-xp">+12 XP / 問 · 🎮 8問正解で2分GET</div>
-              <div class="diff-btn-cap" id="diff-normal-cap">今週のこり: 30分 / 30分</div>
+              <div class="diff-btn-cap" id="diff-normal-cap">今日のこり: 20分 / 20分</div>
             </div>
             <div class="diff-play-btn">▶</div>
           </div>
@@ -1288,7 +1288,7 @@ body {
               <div class="diff-btn-title">レベル67</div>
               <div class="diff-btn-desc" id="diff-hard-desc">5ケタ以上の大きな計算</div>
               <div class="diff-btn-xp">+18 XP / 問 · 🎮 7問正解で3分GET</div>
-              <div class="diff-btn-cap" id="diff-hard-cap">今週のこり: 60分 / 60分</div>
+              <div class="diff-btn-cap" id="diff-hard-cap">今日のこり: 20分 / 20分</div>
             </div>
             <div class="diff-play-btn">▶</div>
           </div>
@@ -1385,9 +1385,13 @@ body {
       <div class="history-content">
         <button class="diff-back-btn" onclick="goToStart()">← ホームへもどる</button>
         <div class="history-title">🕹️ ROBLOX PLAY TIME</div>
-        <div class="history-subtitle">算数をがんばった分だけ Roblox で遊べるよ！</div>
+        <div class="history-subtitle">算数をがんばった分だけ Roblox で遊べるよ！<br>📋 1日20分まで獲得・使用OK ｜ ストック上限2時間</div>
 
         <div class="history-summary">
+          <div>
+            <div class="history-stat-value" id="hist-remaining">0分</div>
+            <div class="history-stat-label">ストック</div>
+          </div>
           <div>
             <div class="history-stat-value" id="hist-total">0分</div>
             <div class="history-stat-label">トータル獲得</div>
@@ -1396,9 +1400,20 @@ body {
             <div class="history-stat-value" id="hist-used">0分</div>
             <div class="history-stat-label">使った時間</div>
           </div>
+        </div>
+
+        <div class="history-summary" style="margin-top:10px;">
           <div>
-            <div class="history-stat-value" id="hist-remaining">0分</div>
-            <div class="history-stat-label">のこり</div>
+            <div class="history-stat-value" id="hist-daily-earn">0/20分</div>
+            <div class="history-stat-label">今日の獲得</div>
+          </div>
+          <div>
+            <div class="history-stat-value" id="hist-daily-use">0/20分</div>
+            <div class="history-stat-label">今日の使用</div>
+          </div>
+          <div>
+            <div class="history-stat-value" id="hist-rollover">0/120分</div>
+            <div class="history-stat-label">ストック上限</div>
           </div>
         </div>
 
@@ -1452,9 +1467,10 @@ function loadSave() {
     playtimeUsed: 0,     // 使った合計（分）
     history: [],         // { date, type, mode, difficulty, minutes, used }
     questsCompleted: 0,
-    // 週間キャップ
-    weeklyEarned: { easy: 0, normal: 0, hard: 0 },
-    weekStart: null,     // 週の開始日 (ISO string)
+    // 日次キャップ
+    dailyEarned: 0,      // 今日獲得した分数
+    dailyUsed: 0,        // 今日使った分数
+    dayStart: null,      // 今日の日付 (YYYY-MM-DD)
     // 平均回答時間トラッキング
     answerTimes: [],     // 直近の回答時間（秒）を保持
   };
@@ -1466,10 +1482,14 @@ function writeSave() {
 
 let save = loadSave();
 
-// 既存セーブデータの互換性
-if (!save.weeklyEarned) {
-  save.weeklyEarned = { easy: 0, normal: 0, hard: 0 };
-  save.weekStart = null;
+// 既存セーブデータの互換性（週間→日次へマイグレーション）
+if (!('dailyEarned' in save)) {
+  save.dailyEarned = 0;
+  save.dailyUsed = 0;
+  save.dayStart = null;
+  // 旧データをクリーンアップ
+  delete save.weeklyEarned;
+  delete save.weekStart;
   writeSave();
 }
 if (!save.answerTimes) {
@@ -1477,35 +1497,40 @@ if (!save.answerTimes) {
   writeSave();
 }
 
-// ===== 週間キャップ管理 =====
-const WEEKLY_CAPS = { easy: 5, normal: 30, hard: 60 };
+// ===== 日次キャップ管理 =====
+const DAILY_EARN_CAP = 20;    // 1日に獲得できる上限（分）
+const DAILY_USE_CAP = 20;     // 1日に使える上限（分）
+const ROLLOVER_CAP = 120;     // 繰り越し上限（分）= 2時間
 
-function getWeekStart() {
-  // 月曜始まりの週の開始日を返す
+function getTodayStr() {
   const now = new Date();
-  const day = now.getDay(); // 0=日, 1=月, ..., 6=土
-  const diff = day === 0 ? 6 : day - 1; // 月曜からの日数
-  const monday = new Date(now);
-  monday.setDate(now.getDate() - diff);
-  monday.setHours(0, 0, 0, 0);
-  return monday.toISOString().split('T')[0]; // "YYYY-MM-DD"
+  return now.toISOString().split('T')[0]; // "YYYY-MM-DD"
 }
 
-function checkWeekReset() {
-  const currentWeek = getWeekStart();
-  if (save.weekStart !== currentWeek) {
-    // 新しい週 → リセット
-    save.weeklyEarned = { easy: 0, normal: 0, hard: 0 };
-    save.weekStart = currentWeek;
+function checkDayReset() {
+  const today = getTodayStr();
+  if (save.dayStart !== today) {
+    // 新しい日 → リセット
+    save.dailyEarned = 0;
+    save.dailyUsed = 0;
+    save.dayStart = today;
     writeSave();
   }
 }
 
-function getWeeklyRemaining(difficulty) {
-  checkWeekReset();
-  const cap = WEEKLY_CAPS[difficulty] || 0;
-  const used = save.weeklyEarned[difficulty] || 0;
-  return Math.max(0, cap - used);
+function getDailyEarnRemaining() {
+  checkDayReset();
+  return Math.max(0, DAILY_EARN_CAP - save.dailyEarned);
+}
+
+function getDailyUseRemaining() {
+  checkDayReset();
+  return Math.max(0, DAILY_USE_CAP - save.dailyUsed);
+}
+
+function getRolloverRemaining() {
+  const balance = save.playtimeEarned - save.playtimeUsed;
+  return Math.max(0, ROLLOVER_CAP - balance);
 }
 
 // ===== セッション状態 =====
@@ -1570,25 +1595,31 @@ function selectMode(mode) {
     document.getElementById('diff-hard-desc').textContent = '小数÷小数やふくざつな計算';
   }
 
-  // 週間キャップ表示を更新
-  updateWeeklyCapDisplay();
+  // 日次キャップ表示を更新
+  updateDailyCapDisplay();
 }
 
-function updateWeeklyCapDisplay() {
-  checkWeekReset();
+function updateDailyCapDisplay() {
+  checkDayReset();
+  const earnRemaining = getDailyEarnRemaining();
+  const balance = save.playtimeEarned - save.playtimeUsed;
+  const rolloverSpace = getRolloverRemaining();
+
   const diffs = ['easy', 'normal', 'hard'];
   diffs.forEach(d => {
-    const remaining = getWeeklyRemaining(d);
-    const cap = WEEKLY_CAPS[d];
     const capEl = document.getElementById(`diff-${d}-cap`);
     const btnEl = document.getElementById(`diff-btn-${d}`);
 
-    if (remaining <= 0) {
-      capEl.textContent = `🔒 今週の上限 ${cap}分に達しました！`;
+    if (earnRemaining <= 0) {
+      capEl.textContent = `🔒 今日の獲得上限 ${DAILY_EARN_CAP}分に達しました！`;
+      capEl.className = 'diff-btn-cap cap-full';
+      btnEl.classList.add('capped');
+    } else if (rolloverSpace <= 0) {
+      capEl.textContent = `🔒 繰り越し上限 ${ROLLOVER_CAP}分（2時間）に達しています！`;
       capEl.className = 'diff-btn-cap cap-full';
       btnEl.classList.add('capped');
     } else {
-      capEl.textContent = `今週のこり: ${remaining}分 / ${cap}分`;
+      capEl.textContent = `今日のこり: ${earnRemaining}分 / ${DAILY_EARN_CAP}分（ストック: ${balance}分 / ${ROLLOVER_CAP}分）`;
       capEl.className = 'diff-btn-cap';
       btnEl.classList.remove('capped');
     }
@@ -1915,15 +1946,21 @@ function showLevelUp() {
 }
 
 // ===== プレータイム管理 =====
-// 上限チェック付きで加算。実際に加算された分数を返す（0=上限到達）
+// 日次上限 & 繰り越し上限チェック付きで加算。実際に加算された分数を返す（0=上限到達）
+// 戻り値: { actual: 実際に加算された分, reason: 'ok'|'daily_cap'|'rollover_cap' }
 function addPlaytime(minutes) {
-  checkWeekReset();
-  const remaining = getWeeklyRemaining(currentDifficulty);
-  const actual = Math.min(minutes, remaining); // 上限を超えない分だけ
+  checkDayReset();
+  const dailyRemain = getDailyEarnRemaining();
+  const rolloverRemain = getRolloverRemaining();
+  const actual = Math.min(minutes, dailyRemain, rolloverRemain);
+
+  let reason = 'ok';
+  if (dailyRemain <= 0) reason = 'daily_cap';
+  else if (rolloverRemain <= 0) reason = 'rollover_cap';
 
   if (actual > 0) {
     save.playtimeEarned += actual;
-    save.weeklyEarned[currentDifficulty] += actual;
+    save.dailyEarned += actual;
     const diffNames = { easy:'Lv.1', normal:'Lv.3', hard:'Lv.67' };
     const modeNames = { 'big-numbers':'大きな数の計算', 'decimal-division':'小数のわり算' };
     save.history.unshift({
@@ -1943,27 +1980,39 @@ function addPlaytime(minutes) {
 }
 
 function usePlaytime() {
-  const remaining = save.playtimeEarned - save.playtimeUsed;
+  checkDayReset();
+  const balance = save.playtimeEarned - save.playtimeUsed;
+  const dailyUseRemain = getDailyUseRemaining();
   const input = document.getElementById('use-time-input');
   const amount = parseInt(input.value);
+  const hint = document.getElementById('use-time-hint');
 
   if (isNaN(amount) || amount < 1) {
     input.style.borderColor = 'var(--rb-red)';
     setTimeout(() => input.style.borderColor = '', 500);
     return;
   }
-  if (amount > remaining) {
+  if (amount > balance) {
     input.style.borderColor = 'var(--rb-red)';
-    document.getElementById('use-time-hint').textContent =
-      `⚠️ のこりは ${remaining}分だよ！${remaining}分以下を入力してね`;
-    document.getElementById('use-time-hint').style.color = 'var(--rb-red)';
-    setTimeout(() => {
-      document.getElementById('use-time-hint').style.color = '';
-    }, 2000);
+    hint.textContent = `⚠️ ストックは ${balance}分だよ！${balance}分以下を入力してね`;
+    hint.style.color = 'var(--rb-red)';
+    setTimeout(() => { hint.style.color = ''; }, 2000);
+    return;
+  }
+  if (amount > dailyUseRemain) {
+    input.style.borderColor = 'var(--rb-red)';
+    if (dailyUseRemain <= 0) {
+      hint.textContent = `🔒 今日はもう${DAILY_USE_CAP}分使ったよ！明日また遊ぼう！`;
+    } else {
+      hint.textContent = `⚠️ 今日あと${dailyUseRemain}分しか使えないよ！${dailyUseRemain}分以下を入力してね`;
+    }
+    hint.style.color = 'var(--rb-red)';
+    setTimeout(() => { hint.style.color = ''; }, 2000);
     return;
   }
 
   save.playtimeUsed += amount;
+  save.dailyUsed += amount;
   save.history.unshift({
     date: new Date().toISOString(),
     type: 'use',
@@ -2003,19 +2052,29 @@ function showResult() {
     document.getElementById('playtime-reward-time').textContent = `+${actualEarned}分`;
     document.getElementById('playtime-reward-detail').textContent =
       `${session.requiredCorrect}問正解クリア！（${session.currentQuestion}問中）`;
-    const weekRemaining = getWeeklyRemaining(currentDifficulty);
-    document.getElementById('res-total-playtime').textContent =
-      (save.playtimeEarned - save.playtimeUsed) + '分'
-      + (weekRemaining <= 0 ? '（今週の上限に達しました！）' : `（今週あと${weekRemaining}分）`);
+    const balance = save.playtimeEarned - save.playtimeUsed;
+    const earnRemain = getDailyEarnRemaining();
+    let statusText = `ストック: ${balance}分 / ${ROLLOVER_CAP}分`;
+    if (earnRemain <= 0) statusText += '（今日の獲得上限に達しました！）';
+    else statusText += `（今日あと${earnRemain}分もらえるよ）`;
+    document.getElementById('res-total-playtime').textContent = statusText;
   } else {
-    // 週間上限に達していた
+    // 上限に達していた
     rewardEl.style.display = 'none';
     failEl.style.display = 'block';
-    const cap = WEEKLY_CAPS[currentDifficulty];
-    document.getElementById('playtime-fail-detail').textContent =
-      `今週の上限 ${cap}分 に達しているよ！`;
-    document.querySelector('#playtime-fail .playtime-reward-detail:last-child').textContent =
-      '⏰ 来週の月曜にリセットされるよ！XPとコインはもらえたよ！';
+    const earnRemain = getDailyEarnRemaining();
+    const rolloverRemain = getRolloverRemaining();
+    if (earnRemain <= 0) {
+      document.getElementById('playtime-fail-detail').textContent =
+        `今日の獲得上限 ${DAILY_EARN_CAP}分 に達しているよ！`;
+      document.querySelector('#playtime-fail .playtime-reward-detail:last-child').textContent =
+        '⏰ 明日になったらまた貯められるよ！XPとコインはもらえたよ！';
+    } else {
+      document.getElementById('playtime-fail-detail').textContent =
+        `ストック上限 ${ROLLOVER_CAP}分（2時間）に達しているよ！`;
+      document.querySelector('#playtime-fail .playtime-reward-detail:last-child').textContent =
+        '🎮 先にRobloxで遊んでからまた貯めよう！XPとコインはもらえたよ！';
+    }
   }
 
   showScreen('result-screen');
@@ -2064,17 +2123,30 @@ function showPlaytimeHistory() {
 }
 
 function renderHistory() {
-  const remaining = save.playtimeEarned - save.playtimeUsed;
+  checkDayReset();
+  const balance = save.playtimeEarned - save.playtimeUsed;
+  const dailyUseRemain = getDailyUseRemaining();
+  const dailyEarnRemain = getDailyEarnRemaining();
+  const canUse = Math.min(balance, dailyUseRemain);
+
   document.getElementById('hist-total').textContent = save.playtimeEarned + '分';
   document.getElementById('hist-used').textContent = save.playtimeUsed + '分';
-  document.getElementById('hist-remaining').textContent = remaining + '分';
+  document.getElementById('hist-remaining').textContent = balance + '分';
+
+  // 日次サマリー
+  document.getElementById('hist-daily-earn').textContent = `${save.dailyEarned}/${DAILY_EARN_CAP}分`;
+  document.getElementById('hist-daily-use').textContent = `${save.dailyUsed}/${DAILY_USE_CAP}分`;
+  document.getElementById('hist-rollover').textContent = `${balance}/${ROLLOVER_CAP}分`;
 
   const btn = document.getElementById('use-time-btn');
   const hint = document.getElementById('use-time-hint');
-  btn.disabled = remaining < 1;
-  if (remaining >= 1) {
-    hint.textContent = `のこり: ${remaining}分（1〜${remaining}分を入力できるよ）`;
+  btn.disabled = canUse < 1;
+  if (canUse >= 1) {
+    hint.textContent = `ストック: ${balance}分 / ${ROLLOVER_CAP}分　｜　今日あと${dailyUseRemain}分使えるよ（1〜${canUse}分を入力）`;
     hint.style.color = '';
+  } else if (dailyUseRemain <= 0) {
+    hint.textContent = `🔒 今日はもう${DAILY_USE_CAP}分使ったよ！明日また遊ぼう！`;
+    hint.style.color = 'var(--rb-yellow)';
   } else {
     hint.textContent = '🔒 プレータイムがないよ。クエストをクリアしよう！';
     hint.style.color = 'var(--rb-yellow)';
