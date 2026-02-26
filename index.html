@@ -1,0 +1,2169 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>MATH QUEST - Roblox風 算数チャレンジ!</title>
+
+<!-- PWA -->
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#232527">
+
+<!-- iOS PWA対応 -->
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="MATH QUEST">
+<link rel="apple-touch-icon" href="icon-192.png">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bungee&family=Noto+Sans+JP:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+/* ===================================================
+   ROBLOX-STYLE MATH QUEST
+   =================================================== */
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  --rb-bg: #232527;
+  --rb-sidebar: #191a1c;
+  --rb-card: #393b3d;
+  --rb-card-hover: #4a4d50;
+  --rb-green: #00b06f;
+  --rb-green-dark: #009960;
+  --rb-green-shadow: #007a4d;
+  --rb-red: #e2231a;
+  --rb-blue: #00a2ff;
+  --rb-yellow: #f5c542;
+  --rb-robux: #cadc3f;
+  --rb-text: #f5f5f5;
+  --rb-text-dim: #a0a3a6;
+  --rb-border: #505356;
+  --rb-surface: #2c2e30;
+}
+
+body {
+  font-family: 'Bungee', 'Noto Sans JP', sans-serif;
+  background: var(--rb-bg);
+  color: var(--rb-text);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* ===== Roblox風サイドバー＋トップナビ ===== */
+.app-layout {
+  display: flex;
+  min-height: 100vh;
+}
+
+.sidebar {
+  width: 68px;
+  background: var(--rb-sidebar);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 12px 0;
+  gap: 4px;
+  border-right: 1px solid rgba(255,255,255,0.06);
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100vh;
+  z-index: 100;
+}
+
+.sidebar-logo {
+  width: 44px;
+  height: 44px;
+  background: var(--rb-red);
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  margin-bottom: 16px;
+  box-shadow: 0 3px 0 #a8180f;
+  cursor: pointer;
+  transition: transform 0.15s;
+}
+.sidebar-logo:hover { transform: scale(1.08); }
+
+.sidebar-btn {
+  width: 48px;
+  height: 48px;
+  border-radius: 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  color: var(--rb-text-dim);
+  cursor: pointer;
+  font-size: 1.2rem;
+  transition: all 0.15s;
+  gap: 2px;
+}
+.sidebar-btn span {
+  font-size: 0.5rem;
+  font-family: 'Noto Sans JP', sans-serif;
+  font-weight: 700;
+}
+.sidebar-btn:hover, .sidebar-btn.active {
+  background: rgba(255,255,255,0.08);
+  color: var(--rb-text);
+}
+.sidebar-btn.active {
+  color: var(--rb-text);
+  background: rgba(255,255,255,0.12);
+}
+
+.main-content {
+  flex: 1;
+  margin-left: 68px;
+  display: flex;
+  flex-direction: column;
+}
+
+/* トップバー */
+.top-bar {
+  background: var(--rb-sidebar);
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 20px;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+  position: sticky;
+  top: 0;
+  z-index: 90;
+}
+
+.top-bar-left {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.search-box {
+  background: var(--rb-surface);
+  border: 1px solid var(--rb-border);
+  border-radius: 8px;
+  padding: 6px 14px;
+  color: var(--rb-text-dim);
+  font-size: 0.75rem;
+  font-family: 'Noto Sans JP', sans-serif;
+  width: 200px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.top-bar-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* Robux風バッジ */
+.robux-badge {
+  background: var(--rb-surface);
+  border: 1px solid var(--rb-border);
+  border-radius: 6px;
+  padding: 4px 12px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.robux-badge:hover { background: var(--rb-card); }
+.robux-icon {
+  width: 18px;
+  height: 18px;
+  background: var(--rb-robux);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.6rem;
+  color: #333;
+  font-weight: bold;
+}
+
+/* Robloxプレータイムバンク */
+.playtime-bank {
+  background: linear-gradient(135deg, #1a5c2a 0%, #0d3518 100%);
+  border: 1px solid #2a8a42;
+  border-radius: 8px;
+  padding: 5px 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.playtime-bank:hover { border-color: var(--rb-green); box-shadow: 0 0 12px rgba(0,176,111,0.3); }
+.playtime-icon { font-size: 1rem; }
+.playtime-value { color: var(--rb-green); font-weight: bold; }
+.playtime-label {
+  color: var(--rb-text-dim);
+  font-size: 0.6rem;
+  font-family: 'Noto Sans JP', sans-serif;
+}
+
+/* アバター */
+.avatar-circle {
+  width: 32px;
+  height: 32px;
+  background: linear-gradient(135deg, var(--rb-blue), #0077cc);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.85rem;
+  border: 2px solid var(--rb-border);
+  cursor: pointer;
+}
+
+/* ===== XPバー（Roblox Experience Bar風） ===== */
+.xp-section {
+  padding: 8px 20px;
+  background: var(--rb-surface);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+}
+
+.xp-level-badge {
+  background: var(--rb-green);
+  color: white;
+  border-radius: 6px;
+  padding: 2px 10px;
+  font-size: 0.7rem;
+  white-space: nowrap;
+  box-shadow: 0 2px 0 var(--rb-green-shadow);
+}
+
+.xp-bar-wrapper { flex: 1; }
+.xp-bar-info {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 3px;
+  font-size: 0.6rem;
+  color: var(--rb-text-dim);
+  font-family: 'Noto Sans JP', sans-serif;
+}
+.xp-bar-bg {
+  width: 100%;
+  height: 8px;
+  background: rgba(255,255,255,0.08);
+  border-radius: 4px;
+  overflow: hidden;
+}
+.xp-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--rb-green), #2ecc71);
+  border-radius: 4px;
+  transition: width 0.5s ease;
+  width: 0%;
+}
+
+.xp-streak {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.8rem;
+}
+.xp-streak .fire { color: #ff6b35; }
+
+/* ===== 画面表示制御 ===== */
+.screen { display: none; }
+.screen.active { display: block; }
+
+/* ===== スタート画面（Roblox Game Discovery風） ===== */
+.start-content {
+  padding: 30px 24px;
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.hero-banner {
+  background: linear-gradient(135deg, #1a1a3e 0%, #0f0f2a 50%, #1a0a2e 100%);
+  border-radius: 16px;
+  padding: 40px 36px;
+  margin-bottom: 32px;
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgba(255,255,255,0.06);
+}
+.hero-banner::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  right: -20%;
+  width: 400px;
+  height: 400px;
+  background: radial-gradient(circle, rgba(0,162,255,0.15) 0%, transparent 70%);
+  pointer-events: none;
+}
+.hero-banner::after {
+  content: '';
+  position: absolute;
+  bottom: -30%;
+  left: -10%;
+  width: 300px;
+  height: 300px;
+  background: radial-gradient(circle, rgba(0,176,111,0.1) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.hero-title {
+  font-size: 2.8rem;
+  margin-bottom: 6px;
+  background: linear-gradient(180deg, #fff 30%, var(--rb-yellow));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  position: relative;
+  z-index: 1;
+}
+.hero-subtitle {
+  font-size: 0.85rem;
+  color: var(--rb-text-dim);
+  position: relative;
+  z-index: 1;
+  font-family: 'Noto Sans JP', sans-serif;
+  font-weight: 400;
+}
+
+/* プレータイムバナー */
+.playtime-banner {
+  background: linear-gradient(135deg, #0d2818 0%, #1a4c2c 100%);
+  border: 1px solid #2a8a42;
+  border-radius: 12px;
+  padding: 16px 24px;
+  margin-bottom: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+.playtime-banner-left {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.playtime-banner-icon {
+  font-size: 2.2rem;
+}
+.playtime-banner-text {
+  font-family: 'Noto Sans JP', sans-serif;
+}
+.playtime-banner-title {
+  font-size: 0.95rem;
+  font-weight: 900;
+  color: var(--rb-green);
+  font-family: 'Bungee', sans-serif;
+}
+.playtime-banner-desc {
+  font-size: 0.75rem;
+  color: var(--rb-text-dim);
+  font-weight: 400;
+}
+.playtime-banner-time {
+  text-align: center;
+}
+.playtime-big {
+  font-size: 2rem;
+  color: var(--rb-green);
+  line-height: 1;
+}
+.playtime-unit {
+  font-size: 0.6rem;
+  color: var(--rb-text-dim);
+  font-family: 'Noto Sans JP', sans-serif;
+}
+
+/* セクション */
+.section-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 14px;
+  font-size: 1.1rem;
+  letter-spacing: 1px;
+}
+.section-header .icon { font-size: 1.3rem; }
+
+/* モードカード（Roblox Game Tile風） */
+.game-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 16px;
+  margin-bottom: 32px;
+}
+
+.game-tile {
+  background: var(--rb-card);
+  border-radius: 12px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: 2px solid transparent;
+}
+.game-tile:hover {
+  border-color: var(--rb-blue);
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+}
+
+.tile-thumbnail {
+  height: 140px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 4rem;
+  position: relative;
+}
+.tile-thumb-big {
+  background: linear-gradient(135deg, #1a2a5c, #0f1a3a);
+}
+.tile-thumb-decimal {
+  background: linear-gradient(135deg, #3a1a5c, #200f3a);
+}
+.tile-badge {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  background: rgba(0,0,0,0.6);
+  backdrop-filter: blur(4px);
+  padding: 3px 8px;
+  border-radius: 4px;
+  font-size: 0.55rem;
+  letter-spacing: 1px;
+}
+.tile-players {
+  position: absolute;
+  bottom: 8px;
+  left: 8px;
+  background: rgba(0,0,0,0.6);
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 0.55rem;
+  color: var(--rb-text-dim);
+  font-family: 'Noto Sans JP', sans-serif;
+}
+
+.tile-info {
+  padding: 12px;
+}
+.tile-title {
+  font-size: 0.9rem;
+  margin-bottom: 4px;
+}
+.tile-desc {
+  font-size: 0.7rem;
+  color: var(--rb-text-dim);
+  font-family: 'Noto Sans JP', sans-serif;
+  font-weight: 400;
+  line-height: 1.4;
+}
+
+/* 難易度選択（Roblox風） */
+.difficulty-screen {
+  max-width: 500px;
+  margin: 0 auto;
+  padding: 40px 20px;
+  text-align: center;
+}
+.diff-back-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: none;
+  border: none;
+  color: var(--rb-text-dim);
+  cursor: pointer;
+  font-size: 0.8rem;
+  font-family: 'Noto Sans JP', sans-serif;
+  margin-bottom: 20px;
+  transition: color 0.15s;
+}
+.diff-back-btn:hover { color: var(--rb-text); }
+
+.diff-title {
+  font-size: 1.6rem;
+  margin-bottom: 6px;
+}
+.diff-subtitle {
+  font-size: 0.8rem;
+  color: var(--rb-text-dim);
+  margin-bottom: 28px;
+  font-family: 'Noto Sans JP', sans-serif;
+  font-weight: 400;
+}
+
+.diff-options {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.diff-btn {
+  background: var(--rb-card);
+  border: 2px solid transparent;
+  border-radius: 10px;
+  padding: 18px 20px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  cursor: pointer;
+  transition: all 0.15s;
+  text-align: left;
+}
+.diff-btn:hover {
+  border-color: var(--rb-blue);
+  background: var(--rb-card-hover);
+}
+
+.diff-btn-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  flex-shrink: 0;
+}
+.diff-easy .diff-btn-icon { background: linear-gradient(135deg, #2a8a42, #1a6630); }
+.diff-normal .diff-btn-icon { background: linear-gradient(135deg, #d4a017, #b38600); }
+.diff-hard .diff-btn-icon { background: linear-gradient(135deg, #cc3333, #991a1a); }
+
+.diff-btn-text { flex: 1; }
+.diff-btn-title {
+  font-size: 1rem;
+  margin-bottom: 2px;
+}
+.diff-btn-desc {
+  font-size: 0.65rem;
+  color: var(--rb-text-dim);
+  font-family: 'Noto Sans JP', sans-serif;
+  font-weight: 400;
+}
+.diff-btn-xp {
+  font-size: 0.65rem;
+  color: var(--rb-yellow);
+  font-family: 'Noto Sans JP', sans-serif;
+}
+
+.diff-play-btn {
+  width: 32px;
+  height: 32px;
+  background: var(--rb-green);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.85rem;
+  box-shadow: 0 3px 0 var(--rb-green-shadow);
+  flex-shrink: 0;
+}
+
+.diff-btn-cap {
+  font-size: 0.6rem;
+  color: var(--rb-green);
+  font-family: 'Noto Sans JP', sans-serif;
+  font-weight: 700;
+  margin-top: 3px;
+}
+.diff-btn-cap.cap-full {
+  color: var(--rb-red);
+}
+
+.diff-btn.capped {
+  opacity: 0.45;
+  pointer-events: none;
+}
+.diff-btn.capped .diff-play-btn {
+  background: var(--rb-card);
+  box-shadow: 0 3px 0 #2a2c2e;
+}
+
+/* ===== ゲーム画面 ===== */
+.game-area {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 24px 20px;
+  text-align: center;
+}
+
+.game-mode-tag {
+  display: inline-block;
+  background: var(--rb-card);
+  padding: 4px 14px;
+  border-radius: 6px;
+  font-size: 0.65rem;
+  letter-spacing: 1px;
+  color: var(--rb-text-dim);
+  margin-bottom: 12px;
+}
+
+.question-counter {
+  font-size: 0.8rem;
+  color: var(--rb-text-dim);
+  margin-bottom: 12px;
+  font-family: 'Noto Sans JP', sans-serif;
+}
+
+.stopwatch-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  margin-bottom: 18px;
+}
+.stopwatch {
+  font-size: 1.1rem;
+  color: var(--rb-text-dim);
+  font-family: 'Bungee', sans-serif;
+  letter-spacing: 1px;
+}
+.stopwatch.fast {
+  color: var(--rb-green);
+}
+.avg-time {
+  font-size: 0.7rem;
+  color: var(--rb-text-dim);
+  font-family: 'Noto Sans JP', sans-serif;
+  background: var(--rb-card);
+  padding: 3px 10px;
+  border-radius: 6px;
+}
+.avg-time:empty {
+  display: none;
+}
+.speed-bonus {
+  color: var(--rb-green);
+  font-size: 0.75rem;
+  margin-left: 4px;
+}
+
+.question-box {
+  background: var(--rb-card);
+  border-radius: 14px;
+  padding: 36px 28px;
+  margin-bottom: 24px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+  position: relative;
+  border: 1px solid rgba(255,255,255,0.04);
+}
+
+.combo-indicator {
+  position: absolute;
+  top: -12px;
+  right: 16px;
+  background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+  padding: 4px 12px;
+  border-radius: 6px;
+  font-size: 0.7rem;
+  display: none;
+  box-shadow: 0 2px 8px rgba(238,90,36,0.4);
+}
+.combo-indicator.show { display: block; animation: pulse 0.5s ease; }
+
+.question-label {
+  font-size: 0.7rem;
+  color: var(--rb-blue);
+  margin-bottom: 14px;
+  letter-spacing: 3px;
+}
+.question-text {
+  font-size: 2.6rem;
+  margin-bottom: 10px;
+  letter-spacing: 3px;
+}
+.question-hint {
+  font-size: 0.75rem;
+  color: #666;
+  font-family: 'Noto Sans JP', sans-serif;
+  font-weight: 400;
+}
+
+/* 回答入力 */
+.answer-area { margin-bottom: 16px; }
+
+.answer-input {
+  width: 220px;
+  padding: 14px 18px;
+  font-size: 1.8rem;
+  font-family: 'Bungee', sans-serif;
+  text-align: center;
+  background: var(--rb-surface);
+  border: 2px solid var(--rb-border);
+  border-radius: 10px;
+  color: white;
+  outline: none;
+  transition: all 0.2s;
+}
+.answer-input:focus {
+  border-color: var(--rb-blue);
+  box-shadow: 0 0 0 3px rgba(0,162,255,0.15);
+}
+.answer-input.correct {
+  border-color: var(--rb-green);
+  box-shadow: 0 0 0 3px rgba(0,176,111,0.2);
+}
+.answer-input.wrong {
+  border-color: var(--rb-red);
+  box-shadow: 0 0 0 3px rgba(226,35,26,0.2);
+  animation: shake 0.4s ease;
+}
+
+.submit-btn {
+  margin-top: 14px;
+  padding: 12px 56px;
+  font-size: 1.1rem;
+  font-family: 'Bungee', sans-serif;
+  background: var(--rb-green);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  box-shadow: 0 4px 0 var(--rb-green-shadow);
+  transition: all 0.1s;
+  letter-spacing: 2px;
+}
+.submit-btn:hover { filter: brightness(1.1); }
+.submit-btn:active {
+  transform: translateY(3px);
+  box-shadow: 0 1px 0 var(--rb-green-shadow);
+}
+
+.feedback {
+  min-height: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+  margin-top: 8px;
+}
+.feedback.correct-fb { color: var(--rb-green); }
+.feedback.wrong-fb { color: var(--rb-red); }
+.feedback .xp-gain {
+  font-size: 0.75rem;
+  color: var(--rb-yellow);
+  margin-left: 8px;
+}
+
+/* ===== リザルト画面 ===== */
+.result-content {
+  max-width: 480px;
+  margin: 0 auto;
+  padding: 32px 20px;
+  text-align: center;
+}
+
+.result-card {
+  background: var(--rb-card);
+  border-radius: 14px;
+  padding: 28px 24px;
+  margin-bottom: 20px;
+  border: 1px solid rgba(255,255,255,0.04);
+}
+
+.result-grade { font-size: 3.5rem; margin-bottom: 4px; }
+.result-title {
+  font-size: 2rem;
+  margin-bottom: 4px;
+}
+.result-subtitle {
+  font-size: 0.85rem;
+  color: var(--rb-text-dim);
+  font-family: 'Noto Sans JP', sans-serif;
+  font-weight: 400;
+  margin-bottom: 24px;
+}
+
+.result-stats { margin-bottom: 4px; }
+.result-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 9px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+  font-family: 'Noto Sans JP', sans-serif;
+  font-size: 0.85rem;
+}
+.result-row:last-child { border-bottom: none; }
+.result-row .label { color: var(--rb-text-dim); }
+.result-row .value { color: var(--rb-yellow); font-weight: bold; }
+
+/* プレータイム獲得カード */
+.playtime-reward {
+  background: linear-gradient(135deg, #0d2818, #1a4c2c);
+  border: 2px solid var(--rb-green);
+  border-radius: 14px;
+  padding: 20px;
+  margin-bottom: 20px;
+  animation: popIn 0.5s ease 0.3s both;
+}
+.playtime-reward-title {
+  font-size: 1rem;
+  color: var(--rb-green);
+  margin-bottom: 4px;
+}
+.playtime-reward-time {
+  font-size: 2.5rem;
+  color: white;
+}
+.playtime-reward-detail {
+  font-size: 0.7rem;
+  color: var(--rb-text-dim);
+  font-family: 'Noto Sans JP', sans-serif;
+  font-weight: 400;
+  margin-top: 4px;
+}
+.playtime-reward-total {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(255,255,255,0.1);
+  font-size: 0.75rem;
+  color: var(--rb-text-dim);
+  font-family: 'Noto Sans JP', sans-serif;
+}
+.playtime-reward-total b {
+  color: var(--rb-green);
+}
+
+.btn-group {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+.btn-primary {
+  padding: 12px 28px;
+  font-size: 0.95rem;
+  font-family: 'Bungee', sans-serif;
+  background: var(--rb-green);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  box-shadow: 0 4px 0 var(--rb-green-shadow);
+  transition: all 0.1s;
+}
+.btn-secondary {
+  padding: 12px 28px;
+  font-size: 0.95rem;
+  font-family: 'Bungee', sans-serif;
+  background: var(--rb-surface);
+  color: white;
+  border: 1px solid var(--rb-border);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.1s;
+}
+.btn-primary:hover, .btn-secondary:hover { filter: brightness(1.15); }
+.btn-primary:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--rb-green-shadow); }
+
+/* ===== プレータイム履歴画面 ===== */
+.history-content {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 24px 20px;
+}
+.history-title {
+  font-size: 1.4rem;
+  margin-bottom: 6px;
+}
+.history-subtitle {
+  font-size: 0.75rem;
+  color: var(--rb-text-dim);
+  font-family: 'Noto Sans JP', sans-serif;
+  font-weight: 400;
+  margin-bottom: 20px;
+}
+
+.history-summary {
+  background: linear-gradient(135deg, #0d2818, #1a4c2c);
+  border: 1px solid #2a8a42;
+  border-radius: 14px;
+  padding: 20px 24px;
+  margin-bottom: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  text-align: center;
+}
+.history-stat-value {
+  font-size: 2rem;
+  color: var(--rb-green);
+}
+.history-stat-label {
+  font-size: 0.65rem;
+  color: var(--rb-text-dim);
+  font-family: 'Noto Sans JP', sans-serif;
+}
+
+.history-list-title {
+  font-size: 0.8rem;
+  color: var(--rb-text-dim);
+  margin-bottom: 10px;
+  letter-spacing: 1px;
+}
+
+.history-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.history-item {
+  background: var(--rb-card);
+  border-radius: 8px;
+  padding: 10px 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-family: 'Noto Sans JP', sans-serif;
+  font-size: 0.8rem;
+}
+.history-item-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.history-item-icon {
+  font-size: 1.1rem;
+}
+.history-item-date {
+  color: var(--rb-text-dim);
+  font-size: 0.65rem;
+}
+.history-item-time {
+  color: var(--rb-green);
+  font-weight: bold;
+}
+.history-item-used {
+  color: var(--rb-text-dim);
+  text-decoration: line-through;
+}
+.history-empty {
+  color: var(--rb-text-dim);
+  text-align: center;
+  padding: 30px;
+  font-family: 'Noto Sans JP', sans-serif;
+  font-size: 0.85rem;
+}
+
+.use-time-btn {
+  margin-top: 16px;
+  padding: 12px 28px;
+  font-size: 0.95rem;
+  font-family: 'Bungee', sans-serif;
+  background: var(--rb-green);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  box-shadow: 0 4px 0 var(--rb-green-shadow);
+  width: 100%;
+  transition: all 0.1s;
+}
+.use-time-section {
+  margin-top: 20px;
+  background: var(--rb-card);
+  border-radius: 12px;
+  padding: 16px 20px;
+}
+.use-time-label {
+  font-size: 0.8rem;
+  color: var(--rb-text-dim);
+  font-family: 'Noto Sans JP', sans-serif;
+  font-weight: 700;
+  margin-bottom: 10px;
+}
+.use-time-input-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  justify-content: center;
+}
+.use-time-input {
+  width: 80px;
+  padding: 10px 12px;
+  font-size: 1.4rem;
+  font-family: 'Bungee', sans-serif;
+  text-align: center;
+  background: var(--rb-surface);
+  border: 2px solid var(--rb-border);
+  border-radius: 8px;
+  color: white;
+  outline: none;
+  transition: all 0.2s;
+}
+.use-time-input:focus {
+  border-color: var(--rb-green);
+  box-shadow: 0 0 0 3px rgba(0,176,111,0.15);
+}
+.use-time-unit {
+  font-size: 1rem;
+  color: var(--rb-text-dim);
+  font-family: 'Noto Sans JP', sans-serif;
+  font-weight: 700;
+}
+.use-time-btn {
+  padding: 10px 20px;
+  font-size: 0.85rem;
+  font-family: 'Bungee', sans-serif;
+  background: var(--rb-green);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  box-shadow: 0 3px 0 var(--rb-green-shadow);
+  transition: all 0.1s;
+  white-space: nowrap;
+}
+.use-time-btn:hover { filter: brightness(1.1); }
+.use-time-btn:disabled {
+  background: var(--rb-card-hover);
+  box-shadow: 0 3px 0 #2a2c2e;
+  color: var(--rb-text-dim);
+  cursor: not-allowed;
+}
+.use-time-hint {
+  margin-top: 8px;
+  font-size: 0.7rem;
+  color: var(--rb-text-dim);
+  font-family: 'Noto Sans JP', sans-serif;
+}
+
+/* ===== アニメーション ===== */
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-8px); }
+  40% { transform: translateX(8px); }
+  60% { transform: translateX(-5px); }
+  80% { transform: translateX(5px); }
+}
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.12); }
+  100% { transform: scale(1); }
+}
+@keyframes popIn {
+  0% { transform: scale(0); opacity: 0; }
+  70% { transform: scale(1.1); }
+  100% { transform: scale(1); opacity: 1; }
+}
+@keyframes slideUp {
+  from { transform: translateY(20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+@keyframes floatUp {
+  0% { transform: translateY(0); opacity: 1; }
+  100% { transform: translateY(-70px); opacity: 0; }
+}
+.pop-in { animation: popIn 0.4s ease; }
+.slide-up { animation: slideUp 0.4s ease; }
+
+.float-text {
+  position: fixed;
+  font-size: 1.3rem;
+  font-family: 'Bungee', sans-serif;
+  color: var(--rb-yellow);
+  pointer-events: none;
+  animation: floatUp 1s ease forwards;
+  z-index: 200;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+}
+
+/* レベルアップ */
+.level-up-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.75);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 300;
+  flex-direction: column;
+}
+.level-up-overlay.show {
+  display: flex;
+  animation: popIn 0.5s ease;
+}
+.level-up-text {
+  font-size: 2.5rem;
+  color: var(--rb-yellow);
+  text-shadow: 0 4px 12px rgba(245,197,66,0.5);
+  margin-bottom: 6px;
+}
+.level-up-sub {
+  font-size: 1rem;
+  color: #ccc;
+}
+
+/* パーティクル */
+.particle-container {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  pointer-events: none;
+  z-index: 250;
+  overflow: hidden;
+}
+.particle {
+  position: absolute;
+  border-radius: 2px;
+  animation: particleFall 1.5s ease forwards;
+}
+@keyframes particleFall {
+  0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+  100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+}
+
+/* ===== レスポンシブ ===== */
+@media (max-width: 640px) {
+  .sidebar { width: 0; display: none; }
+  .main-content { margin-left: 0; }
+  .hero-title { font-size: 1.8rem; }
+  .game-grid { grid-template-columns: 1fr; }
+  .question-text { font-size: 1.8rem; }
+  .answer-input { width: 180px; font-size: 1.4rem; }
+  .top-bar { padding: 0 10px; }
+  .search-box { display: none; }
+  .playtime-banner { flex-direction: column; text-align: center; }
+  .history-summary { flex-direction: column; gap: 12px; }
+}
+</style>
+</head>
+<body>
+
+<div class="app-layout">
+
+  <!-- ===== Roblox風サイドバー ===== -->
+  <nav class="sidebar">
+    <div class="sidebar-logo" onclick="goToStart()">🎮</div>
+    <button class="sidebar-btn active" id="nav-home" onclick="goToStart()">🏠<span>ホーム</span></button>
+    <button class="sidebar-btn" id="nav-history" onclick="showPlaytimeHistory()">🕹️<span>タイム</span></button>
+  </nav>
+
+  <!-- ===== メインコンテンツ ===== -->
+  <div class="main-content">
+
+    <!-- トップバー -->
+    <div class="top-bar">
+      <div class="top-bar-left">
+        <div class="search-box">🔍 ゲームをさがす...</div>
+      </div>
+      <div class="top-bar-right">
+        <div class="playtime-bank" onclick="showPlaytimeHistory()" title="Robloxプレータイム">
+          <span class="playtime-icon">🕹️</span>
+          <div>
+            <div class="playtime-value" id="playtime-display">0分</div>
+            <div class="playtime-label">プレータイム</div>
+          </div>
+        </div>
+        <div class="robux-badge">
+          <div class="robux-icon">R$</div>
+          <span id="robux">0</span>
+        </div>
+        <div class="avatar-circle">😎</div>
+      </div>
+    </div>
+
+    <!-- XPバー -->
+    <div class="xp-section">
+      <div class="xp-level-badge" id="level-badge">Lv.1</div>
+      <div class="xp-bar-wrapper">
+        <div class="xp-bar-info">
+          <span id="xp-label">XP: 0 / 100</span>
+          <span id="level-label">Level 1</span>
+        </div>
+        <div class="xp-bar-bg">
+          <div class="xp-bar-fill" id="xp-bar"></div>
+        </div>
+      </div>
+      <div class="xp-streak">
+        <span class="fire">🔥</span>
+        <span id="streak">0</span>
+      </div>
+    </div>
+
+    <!-- ===== スタート画面 ===== -->
+    <div class="screen active" id="start-screen">
+      <div class="start-content">
+
+        <div class="hero-banner pop-in">
+          <div class="hero-title">MATH QUEST</div>
+          <div class="hero-subtitle">算数を解いて Roblox プレータイムをゲットしよう！</div>
+        </div>
+
+        <!-- プレータイムバナー -->
+        <div class="playtime-banner slide-up">
+          <div class="playtime-banner-left">
+            <div class="playtime-banner-icon">🎮</div>
+            <div class="playtime-banner-text">
+              <div class="playtime-banner-title">ROBLOX PLAY TIME</div>
+              <div class="playtime-banner-desc">Lv.1:10問正解→1分 / Lv.3:8問正解→2分 / Lv.67:7問正解→3分</div>
+            </div>
+          </div>
+          <div class="playtime-banner-time">
+            <div class="playtime-big" id="banner-playtime">0</div>
+            <div class="playtime-unit">分 たまってるよ</div>
+          </div>
+        </div>
+
+        <div class="section-header slide-up">
+          <span class="icon">🎯</span> QUEST SELECT
+        </div>
+
+        <div class="game-grid slide-up">
+          <div class="game-tile" onclick="selectMode('big-numbers')">
+            <div class="tile-thumbnail tile-thumb-big">
+              <span>🔢</span>
+              <div class="tile-badge">✨ POPULAR</div>
+              <div class="tile-players">👤 Challenge Mode</div>
+            </div>
+            <div class="tile-info">
+              <div class="tile-title">大きな数の計算</div>
+              <div class="tile-desc">4ケタ以上の たし算・ひき算・かけ算にチャレンジ！</div>
+            </div>
+          </div>
+
+          <div class="game-tile" onclick="selectMode('decimal-division')">
+            <div class="tile-thumbnail tile-thumb-decimal">
+              <span>➗</span>
+              <div class="tile-badge">🔥 HOT</div>
+              <div class="tile-players">👤 Pro Mode</div>
+            </div>
+            <div class="tile-info">
+              <div class="tile-title">小数のわり算</div>
+              <div class="tile-desc">小数点がある わり算の問題にチャレンジ！</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ===== 難易度選択画面 ===== -->
+    <div class="screen" id="difficulty-screen">
+      <div class="difficulty-screen">
+        <button class="diff-back-btn" onclick="goToStart()">← もどる</button>
+        <div class="diff-title" id="diff-mode-title">大きな数の計算</div>
+        <div class="diff-subtitle">レベルを えらぼう！</div>
+
+        <div class="diff-options">
+          <div class="diff-btn diff-easy" id="diff-btn-easy" onclick="startGame('easy')">
+            <div class="diff-btn-icon">😊</div>
+            <div class="diff-btn-text">
+              <div class="diff-btn-title">レベル１</div>
+              <div class="diff-btn-desc" id="diff-easy-desc">小さめの数でれんしゅう</div>
+              <div class="diff-btn-xp">+8 XP / 問 · 🎮 10問正解で1分GET</div>
+              <div class="diff-btn-cap" id="diff-easy-cap">今週のこり: 5分 / 5分</div>
+            </div>
+            <div class="diff-play-btn">▶</div>
+          </div>
+
+          <div class="diff-btn diff-normal" id="diff-btn-normal" onclick="startGame('normal')">
+            <div class="diff-btn-icon">💪</div>
+            <div class="diff-btn-text">
+              <div class="diff-btn-title">レベル3</div>
+              <div class="diff-btn-desc" id="diff-normal-desc">4ケタの計算にチャレンジ</div>
+              <div class="diff-btn-xp">+12 XP / 問 · 🎮 8問正解で2分GET</div>
+              <div class="diff-btn-cap" id="diff-normal-cap">今週のこり: 30分 / 30分</div>
+            </div>
+            <div class="diff-play-btn">▶</div>
+          </div>
+
+          <div class="diff-btn diff-hard" id="diff-btn-hard" onclick="startGame('hard')">
+            <div class="diff-btn-icon">🔥</div>
+            <div class="diff-btn-text">
+              <div class="diff-btn-title">レベル67</div>
+              <div class="diff-btn-desc" id="diff-hard-desc">5ケタ以上の大きな計算</div>
+              <div class="diff-btn-xp">+18 XP / 問 · 🎮 7問正解で3分GET</div>
+              <div class="diff-btn-cap" id="diff-hard-cap">今週のこり: 60分 / 60分</div>
+            </div>
+            <div class="diff-play-btn">▶</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== ゲーム画面 ===== -->
+    <div class="screen" id="game-screen">
+      <div class="game-area">
+        <div class="game-mode-tag" id="game-mode-tag">大きな数の計算 · Lv.3</div>
+        <div class="question-counter" id="question-counter">Q1 / 10</div>
+        <div class="stopwatch-row">
+          <div class="stopwatch" id="stopwatch">⏱ 0.0秒</div>
+          <div class="avg-time" id="avg-time-display"></div>
+        </div>
+        <div class="question-box">
+          <div class="combo-indicator" id="combo-indicator">🔥 COMBO x<span id="combo-count">2</span></div>
+          <div class="question-label">QUESTION</div>
+          <div class="question-text" id="question-text">1234 + 5678</div>
+          <div class="question-hint" id="question-hint"></div>
+        </div>
+        <div class="answer-area">
+          <input type="text" inputmode="decimal" class="answer-input" id="answer-input"
+                 placeholder="?" autocomplete="off">
+          <br>
+          <button class="submit-btn" id="submit-btn" onclick="checkAnswer()">CHECK!</button>
+        </div>
+        <div class="feedback" id="feedback"></div>
+      </div>
+    </div>
+
+    <!-- ===== リザルト画面 ===== -->
+    <div class="screen" id="result-screen">
+      <div class="result-content">
+        <div class="result-card pop-in">
+          <div class="result-grade" id="result-grade">🏆</div>
+          <h2 class="result-title" id="result-title">AMAZING!</h2>
+          <p class="result-subtitle" id="result-subtitle">クエスト完了！</p>
+          <div class="result-stats">
+            <div class="result-row">
+              <span class="label">正解数</span>
+              <span class="value" id="res-correct">0 / 10</span>
+            </div>
+            <div class="result-row">
+              <span class="label">正解率</span>
+              <span class="value" id="res-rate">0%</span>
+            </div>
+            <div class="result-row">
+              <span class="label">最大コンボ</span>
+              <span class="value" id="res-combo">0</span>
+            </div>
+            <div class="result-row" id="res-avgtime-row" style="display:none;">
+              <span class="label">平均回答時間</span>
+              <span class="value" id="res-avgtime">-</span>
+            </div>
+            <div class="result-row">
+              <span class="label">獲得XP</span>
+              <span class="value" id="res-xp">0</span>
+            </div>
+            <div class="result-row">
+              <span class="label">獲得コイン</span>
+              <span class="value" id="res-coins">R$ 0</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- プレータイム獲得 -->
+        <div class="playtime-reward" id="playtime-reward" style="display:none;">
+          <div class="playtime-reward-title" id="playtime-reward-title">🎮 ROBLOX PLAY TIME GET!</div>
+          <div class="playtime-reward-time" id="playtime-reward-time">+1分</div>
+          <div class="playtime-reward-detail" id="playtime-reward-detail">がんばったごほうびだよ！</div>
+          <div class="playtime-reward-total">
+            トータル: <b id="res-total-playtime">0分</b>
+          </div>
+        </div>
+
+        <!-- プレータイム未達成 -->
+        <div class="playtime-reward" id="playtime-fail" style="display:none; border-color: var(--rb-yellow); background: linear-gradient(135deg, #2a2000, #3d3010);">
+          <div class="playtime-reward-title" style="color: var(--rb-yellow);">😢 あとちょっと...</div>
+          <div class="playtime-reward-detail" id="playtime-fail-detail" style="margin-top:4px;">あと2問正解すればプレータイムGETだったよ！</div>
+          <div class="playtime-reward-detail" style="margin-top:8px;">💪 もう一回チャレンジしよう！</div>
+        </div>
+
+        <div class="btn-group">
+          <button class="btn-primary" onclick="selectMode(currentMode)">もう一回!</button>
+          <button class="btn-secondary" onclick="goToStart()">ホームへ</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== プレータイム履歴画面 ===== -->
+    <div class="screen" id="history-screen">
+      <div class="history-content">
+        <button class="diff-back-btn" onclick="goToStart()">← ホームへもどる</button>
+        <div class="history-title">🕹️ ROBLOX PLAY TIME</div>
+        <div class="history-subtitle">算数をがんばった分だけ Roblox で遊べるよ！</div>
+
+        <div class="history-summary">
+          <div>
+            <div class="history-stat-value" id="hist-total">0分</div>
+            <div class="history-stat-label">トータル獲得</div>
+          </div>
+          <div>
+            <div class="history-stat-value" id="hist-used">0分</div>
+            <div class="history-stat-label">使った時間</div>
+          </div>
+          <div>
+            <div class="history-stat-value" id="hist-remaining">0分</div>
+            <div class="history-stat-label">のこり</div>
+          </div>
+        </div>
+
+        <div class="history-list-title">📋 HISTORY</div>
+        <div class="history-list" id="history-list">
+          <div class="history-empty">まだ履歴がないよ。クエストをクリアしよう！</div>
+        </div>
+
+        <div class="use-time-section" id="use-time-section">
+          <div class="use-time-label">🎮 Robloxで遊んだ時間を入力してね</div>
+          <div class="use-time-input-row">
+            <input type="number" class="use-time-input" id="use-time-input" min="1" placeholder="0" value="1">
+            <span class="use-time-unit">分</span>
+            <button class="use-time-btn" id="use-time-btn" onclick="usePlaytime()">
+              使ったよ！
+            </button>
+          </div>
+          <div class="use-time-hint" id="use-time-hint">のこり: 0分</div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /main-content -->
+</div><!-- /app-layout -->
+
+<!-- レベルアップ -->
+<div class="level-up-overlay" id="level-up-overlay">
+  <div class="level-up-text">LEVEL UP!</div>
+  <div class="level-up-sub" id="level-up-sub">Level 2 になった！</div>
+</div>
+
+<!-- パーティクル -->
+<div class="particle-container" id="particles"></div>
+
+<script>
+// =======================================================
+//  MATH QUEST - Game Logic
+// =======================================================
+
+// ===== 永続データ (localStorage) =====
+function loadSave() {
+  const raw = localStorage.getItem('mathquest-save');
+  if (raw) return JSON.parse(raw);
+  return {
+    level: 1,
+    xp: 0,
+    xpToNext: 100,
+    totalCoins: 0,
+    // プレータイム
+    playtimeEarned: 0,   // 獲得した合計（分）
+    playtimeUsed: 0,     // 使った合計（分）
+    history: [],         // { date, type, mode, difficulty, minutes, used }
+    questsCompleted: 0,
+    // 週間キャップ
+    weeklyEarned: { easy: 0, normal: 0, hard: 0 },
+    weekStart: null,     // 週の開始日 (ISO string)
+    // 平均回答時間トラッキング
+    answerTimes: [],     // 直近の回答時間（秒）を保持
+  };
+}
+
+function writeSave() {
+  localStorage.setItem('mathquest-save', JSON.stringify(save));
+}
+
+let save = loadSave();
+
+// 既存セーブデータの互換性
+if (!save.weeklyEarned) {
+  save.weeklyEarned = { easy: 0, normal: 0, hard: 0 };
+  save.weekStart = null;
+  writeSave();
+}
+if (!save.answerTimes) {
+  save.answerTimes = [];
+  writeSave();
+}
+
+// ===== 週間キャップ管理 =====
+const WEEKLY_CAPS = { easy: 5, normal: 30, hard: 60 };
+
+function getWeekStart() {
+  // 月曜始まりの週の開始日を返す
+  const now = new Date();
+  const day = now.getDay(); // 0=日, 1=月, ..., 6=土
+  const diff = day === 0 ? 6 : day - 1; // 月曜からの日数
+  const monday = new Date(now);
+  monday.setDate(now.getDate() - diff);
+  monday.setHours(0, 0, 0, 0);
+  return monday.toISOString().split('T')[0]; // "YYYY-MM-DD"
+}
+
+function checkWeekReset() {
+  const currentWeek = getWeekStart();
+  if (save.weekStart !== currentWeek) {
+    // 新しい週 → リセット
+    save.weeklyEarned = { easy: 0, normal: 0, hard: 0 };
+    save.weekStart = currentWeek;
+    writeSave();
+  }
+}
+
+function getWeeklyRemaining(difficulty) {
+  checkWeekReset();
+  const cap = WEEKLY_CAPS[difficulty] || 0;
+  const used = save.weeklyEarned[difficulty] || 0;
+  return Math.max(0, cap - used);
+}
+
+// ===== セッション状態 =====
+const session = {
+  streak: 0,
+  maxStreak: 0,
+  currentQuestion: 0,
+  totalQuestions: 10,
+  correctCount: 0,
+  currentAnswer: 0,
+  sessionXP: 0,
+  sessionCoins: 0,
+  timerInterval: null,
+  timeLeft: 0,
+  timeMax: 0,
+};
+
+let currentMode = '';      // 'big-numbers' | 'decimal-division'
+let currentDifficulty = ''; // 'easy' | 'normal' | 'hard'
+
+// ===== 初期化 =====
+function initUI() {
+  document.getElementById('robux').textContent = save.totalCoins;
+  updatePlaytimeDisplay();
+  updateXPBar();
+}
+initUI();
+
+// ===== 画面切り替え =====
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  // サイドバーアクティブ
+  document.querySelectorAll('.sidebar-btn').forEach(b => b.classList.remove('active'));
+  if (id === 'history-screen') {
+    document.getElementById('nav-history').classList.add('active');
+  } else {
+    document.getElementById('nav-home').classList.add('active');
+  }
+}
+
+function goToStart() {
+  clearInterval(session.timerInterval);
+  showScreen('start-screen');
+  document.getElementById('banner-playtime').textContent = save.playtimeEarned - save.playtimeUsed;
+}
+
+// ===== モード選択 → 難易度画面 =====
+function selectMode(mode) {
+  currentMode = mode;
+  showScreen('difficulty-screen');
+
+  if (mode === 'big-numbers') {
+    document.getElementById('diff-mode-title').textContent = '🔢 大きな数の計算';
+    document.getElementById('diff-easy-desc').textContent = '3ケタ + 3ケタ などの計算';
+    document.getElementById('diff-normal-desc').textContent = '4ケタの たし算・ひき算・かけ算';
+    document.getElementById('diff-hard-desc').textContent = '5ケタ以上の計算や 3ケタ×2ケタ';
+  } else {
+    document.getElementById('diff-mode-title').textContent = '➗ 小数のわり算';
+    document.getElementById('diff-easy-desc').textContent = 'やさしい小数のわり算';
+    document.getElementById('diff-normal-desc').textContent = '小数÷整数、整数÷小数';
+    document.getElementById('diff-hard-desc').textContent = '小数÷小数やふくざつな計算';
+  }
+
+  // 週間キャップ表示を更新
+  updateWeeklyCapDisplay();
+}
+
+function updateWeeklyCapDisplay() {
+  checkWeekReset();
+  const diffs = ['easy', 'normal', 'hard'];
+  diffs.forEach(d => {
+    const remaining = getWeeklyRemaining(d);
+    const cap = WEEKLY_CAPS[d];
+    const capEl = document.getElementById(`diff-${d}-cap`);
+    const btnEl = document.getElementById(`diff-btn-${d}`);
+
+    if (remaining <= 0) {
+      capEl.textContent = `🔒 今週の上限 ${cap}分に達しました！`;
+      capEl.className = 'diff-btn-cap cap-full';
+      btnEl.classList.add('capped');
+    } else {
+      capEl.textContent = `今週のこり: ${remaining}分 / ${cap}分`;
+      capEl.className = 'diff-btn-cap';
+      btnEl.classList.remove('capped');
+    }
+  });
+}
+
+// ===== ゲーム開始 =====
+function startGame(difficulty) {
+  currentDifficulty = difficulty;
+  session.currentQuestion = 0;
+  session.correctCount = 0;
+  session.streak = 0;
+  session.maxStreak = 0;
+  session.sessionXP = 0;
+  session.sessionCoins = 0;
+  session.totalAnswerTime = 0;
+  document.getElementById('streak').textContent = '0';
+  document.getElementById('combo-indicator').classList.remove('show');
+
+  // 難易度別の目標正解数
+  const goals = { easy: 10, normal: 8, hard: 7 };
+  session.requiredCorrect = goals[difficulty] || 10;
+
+  // タグ表示
+  const modeNames = { 'big-numbers': '大きな数の計算', 'decimal-division': '小数のわり算' };
+  const diffNames = { easy: 'Lv.1', normal: 'Lv.3', hard: 'Lv.67' };
+  document.getElementById('game-mode-tag').textContent =
+    `${modeNames[currentMode]} · ${diffNames[currentDifficulty]} · ${session.requiredCorrect}問正解でクリア!`;
+
+  showScreen('game-screen');
+  nextQuestion();
+}
+
+// ===== 問題生成: 大きな数の計算 =====
+function generateBigNumberQuestion() {
+  const ops = ['+', '-', '×'];
+  const op = pickFrom(ops);
+  let a, b, answer;
+
+  if (currentDifficulty === 'easy') {
+    // かんたん: 3ケタ同士
+    if (op === '+') { a = randInt(100, 999); b = randInt(100, 999); answer = a + b; }
+    else if (op === '-') { a = randInt(200, 999); b = randInt(100, a); answer = a - b; }
+    else { a = randInt(10, 99); b = randInt(2, 9); answer = a * b; }
+  } else if (currentDifficulty === 'normal') {
+    // ふつう: 4ケタ
+    if (op === '+') { a = randInt(1000, 9999); b = randInt(1000, 9999); answer = a + b; }
+    else if (op === '-') { a = randInt(1000, 9999); b = randInt(1000, a); answer = a - b; }
+    else {
+      if (Math.random() < 0.5) { a = randInt(100, 999); b = randInt(2, 9); }
+      else { a = randInt(10, 99); b = randInt(10, 99); }
+      answer = a * b;
+    }
+  } else {
+    // むずかしい: 5ケタ以上
+    if (op === '+') { a = randInt(10000, 99999); b = randInt(10000, 99999); answer = a + b; }
+    else if (op === '-') { a = randInt(10000, 99999); b = randInt(10000, a); answer = a - b; }
+    else {
+      if (Math.random() < 0.5) { a = randInt(100, 999); b = randInt(10, 99); }
+      else { a = randInt(1000, 9999); b = randInt(2, 9); }
+      answer = a * b;
+    }
+  }
+
+  return {
+    text: `${a.toLocaleString()} ${op} ${b.toLocaleString()}`,
+    answer: answer,
+    hint: op === '×' ? 'ひっ算してみよう！' : ''
+  };
+}
+
+// ===== 問題生成: 小数のわり算 =====
+function generateDecimalDivisionQuestion() {
+  const pattern = Math.floor(Math.random() * 3);
+  let text, answer;
+
+  if (currentDifficulty === 'easy') {
+    // かんたん: 整数÷整数=小数 (割る数は2か5のみ)
+    const divisor = pickFrom([2, 5]);
+    if (divisor === 2) {
+      const q = pickFrom([0.5, 1.5, 2.5, 3.5]);
+      const d = q * 2;
+      text = `${d} ÷ 2`; answer = q;
+    } else {
+      const q = pickFrom([0.2, 0.4, 0.6, 0.8, 1.2]);
+      const d = q * 5;
+      text = `${d} ÷ 5`; answer = q;
+    }
+  } else if (currentDifficulty === 'normal') {
+    if (pattern === 0) {
+      const divisor = pickFrom([2, 4, 5, 8]);
+      const qOpts = {
+        2: [0.5,1.5,2.5,3.5,4.5],
+        4: [0.25,0.75,1.25,1.75,2.25],
+        5: [0.2,0.4,0.6,0.8,1.2,1.4,1.6],
+        8: [0.125,0.375,0.625,0.875]
+      };
+      const q = pickFrom(qOpts[divisor]);
+      const d = q * divisor;
+      text = `${d} ÷ ${divisor}`; answer = q;
+    } else if (pattern === 1) {
+      const divisor = randInt(2, 9);
+      const q = randInt(1, 20) / 10;
+      const d = Math.round(q * divisor * 10) / 10;
+      answer = Math.round((d / divisor) * 1000) / 1000;
+      text = `${d} ÷ ${divisor}`;
+    } else {
+      const divisor = pickFrom([0.2, 0.4, 0.5, 0.8, 2.5]);
+      const aInt = randInt(2, 15);
+      const d = Math.round(aInt * divisor * 10) / 10;
+      answer = aInt;
+      text = `${d} ÷ ${divisor}`;
+    }
+  } else {
+    // むずかしい: 小数÷小数、大きめの数
+    if (pattern === 0) {
+      const divisor = pickFrom([0.3, 0.6, 0.7, 1.2, 1.5, 2.4]);
+      const aInt = randInt(3, 30);
+      const d = Math.round(aInt * divisor * 100) / 100;
+      answer = aInt;
+      text = `${d} ÷ ${divisor}`;
+    } else if (pattern === 1) {
+      const divisor = pickFrom([0.25, 0.125, 0.05, 0.04]);
+      const aInt = randInt(2, 20);
+      const d = Math.round(aInt * divisor * 1000) / 1000;
+      answer = aInt;
+      text = `${d} ÷ ${divisor}`;
+    } else {
+      const d = pickFrom([12.6, 15.4, 18.9, 24.8, 36.6, 45.5]);
+      const divisor = pickFrom([0.2, 0.3, 0.5, 0.7]);
+      answer = Math.round((d / divisor) * 100) / 100;
+      text = `${d} ÷ ${divisor}`;
+    }
+  }
+
+  return {
+    text, answer,
+    hint: currentDifficulty === 'easy' ? 'おちついて計算しよう！' : '割り切れる答えになるよ！'
+  };
+}
+
+// ===== 次の問題 =====
+function nextQuestion() {
+  // 目標正解数に達したらクリア！
+  if (session.correctCount >= session.requiredCorrect) {
+    showResult();
+    return;
+  }
+
+  session.currentQuestion++;
+
+  document.getElementById('question-counter').textContent =
+    `✅ ${session.correctCount} / ${session.requiredCorrect} 正解　（${session.currentQuestion}問目）`;
+
+  const q = currentMode === 'big-numbers'
+    ? generateBigNumberQuestion()
+    : generateDecimalDivisionQuestion();
+
+  session.currentAnswer = q.answer;
+  document.getElementById('question-text').textContent = q.text;
+  document.getElementById('question-hint').textContent = q.hint;
+
+  const input = document.getElementById('answer-input');
+  input.value = '';
+  input.className = 'answer-input';
+  input.focus();
+  document.getElementById('feedback').textContent = '';
+  document.getElementById('feedback').className = 'feedback';
+  document.getElementById('submit-btn').disabled = false;
+
+  // ストップウォッチ開始
+  clearInterval(session.timerInterval);
+  session.questionStartTime = Date.now();
+  session.elapsed = 0;
+  const swEl = document.getElementById('stopwatch');
+  swEl.textContent = '⏱ 0.0秒';
+  swEl.classList.remove('fast');
+  session.timerInterval = setInterval(() => {
+    session.elapsed = (Date.now() - session.questionStartTime) / 1000;
+    swEl.textContent = `⏱ ${session.elapsed.toFixed(1)}秒`;
+  }, 100);
+
+  // 平均表示（10問以上回答済みの場合）
+  const avgEl = document.getElementById('avg-time-display');
+  if (save.answerTimes.length >= 10) {
+    const avg = save.answerTimes.reduce((a, b) => a + b, 0) / save.answerTimes.length;
+    avgEl.textContent = `⚡ 平均 ${avg.toFixed(1)}秒（平均より早いと×1.1ボーナス!）`;
+  } else {
+    avgEl.textContent = save.answerTimes.length > 0
+      ? `📊 あと${10 - save.answerTimes.length}問で平均タイム解禁！`
+      : '';
+  }
+}
+
+// ===== 回答チェック =====
+function checkAnswer() {
+  const input = document.getElementById('answer-input');
+  const userAnswer = parseFloat(input.value);
+
+  if (input.value.trim() === '' || isNaN(userAnswer)) {
+    input.className = 'answer-input wrong';
+    setTimeout(() => input.className = 'answer-input', 300);
+    return;
+  }
+
+  // ストップウォッチ停止
+  clearInterval(session.timerInterval);
+  const answerTime = (Date.now() - session.questionStartTime) / 1000;
+  document.getElementById('submit-btn').disabled = true;
+
+  // 回答時間を記録（正解・不正解問わず）
+  save.answerTimes.push(Math.round(answerTime * 10) / 10);
+  // 直近100問分だけ保持
+  if (save.answerTimes.length > 100) save.answerTimes = save.answerTimes.slice(-100);
+  writeSave();
+
+  // 平均より早いかチェック
+  let isFast = false;
+  let avg = 0;
+  if (save.answerTimes.length >= 10) {
+    avg = save.answerTimes.reduce((a, b) => a + b, 0) / save.answerTimes.length;
+    isFast = answerTime < avg;
+  }
+
+  // ストップウォッチ表示を更新
+  const swEl = document.getElementById('stopwatch');
+  swEl.textContent = `⏱ ${answerTime.toFixed(1)}秒`;
+  if (isFast) swEl.classList.add('fast');
+
+  const isCorrect = Math.abs(userAnswer - session.currentAnswer) < 0.001;
+  const fb = document.getElementById('feedback');
+
+  if (isCorrect) {
+    session.correctCount++;
+    session.streak++;
+    if (session.streak > session.maxStreak) session.maxStreak = session.streak;
+    document.getElementById('streak').textContent = session.streak;
+    input.className = 'answer-input correct';
+
+    // XP: 難易度ベース
+    const baseXP = { easy: 8, normal: 12, hard: 18 };
+    let xpGain = baseXP[currentDifficulty] || 10;
+    const combo = Math.min(session.streak, 5);
+    xpGain += (combo - 1) * 4;
+
+    // 平均より早いボーナス: ×1.1
+    let speedBonus = false;
+    if (isFast) {
+      xpGain = Math.ceil(xpGain * 1.1);
+      speedBonus = true;
+    }
+
+    const coinGain = Math.floor(xpGain / 2);
+    session.sessionXP += xpGain;
+    session.sessionCoins += coinGain;
+    session.totalAnswerTime = (session.totalAnswerTime || 0) + answerTime;
+    addXP(xpGain);
+    save.totalCoins += coinGain;
+    document.getElementById('robux').textContent = save.totalCoins;
+    writeSave();
+
+    // コンボ
+    if (session.streak >= 2) {
+      const ci = document.getElementById('combo-indicator');
+      document.getElementById('combo-count').textContent = session.streak;
+      ci.classList.add('show');
+      ci.style.animation = 'none'; ci.offsetHeight;
+      ci.style.animation = 'pulse 0.5s ease';
+    }
+
+    const msgs = ['すごい！','ナイス！','グレート！','パーフェクト！','エクセレント！'];
+    let fbHTML = `✅ ${pickFrom(msgs)} <span class="xp-gain">+${xpGain} XP</span>`;
+    if (speedBonus) {
+      fbHTML += `<span class="speed-bonus">⚡×1.1</span>`;
+      showFloatText('⚡ SPEED BONUS!', window.innerWidth / 2 - 60, window.innerHeight / 2 - 40);
+    }
+    fb.className = 'feedback correct-fb';
+    fb.innerHTML = fbHTML;
+    showFloatText(`+${xpGain} XP`, window.innerWidth / 2, window.innerHeight / 2);
+  } else {
+    session.streak = 0;
+    document.getElementById('streak').textContent = '0';
+    document.getElementById('combo-indicator').classList.remove('show');
+    input.className = 'answer-input wrong';
+    fb.className = 'feedback wrong-fb';
+    fb.innerHTML = `❌ ざんねん！ 答えは <b>${session.currentAnswer}</b>`;
+  }
+
+  setTimeout(nextQuestion, 1800);
+}
+
+// Enterキー
+document.getElementById('answer-input').addEventListener('keydown', e => {
+  if (e.key === 'Enter') checkAnswer();
+});
+
+// ===== XP & レベル =====
+function addXP(amount) {
+  save.xp += amount;
+  while (save.xp >= save.xpToNext) {
+    save.xp -= save.xpToNext;
+    save.level++;
+    save.xpToNext = Math.floor(save.xpToNext * 1.3);
+    showLevelUp();
+  }
+  updateXPBar();
+  writeSave();
+}
+
+function updateXPBar() {
+  const pct = (save.xp / save.xpToNext) * 100;
+  document.getElementById('xp-bar').style.width = pct + '%';
+  document.getElementById('xp-label').textContent = `XP: ${save.xp} / ${save.xpToNext}`;
+  document.getElementById('level-label').textContent = `Level ${save.level}`;
+  document.getElementById('level-badge').textContent = `Lv.${save.level}`;
+}
+
+function showLevelUp() {
+  const overlay = document.getElementById('level-up-overlay');
+  document.getElementById('level-up-sub').textContent = `Level ${save.level} になった！`;
+  overlay.classList.add('show');
+  spawnParticles();
+  setTimeout(() => overlay.classList.remove('show'), 2500);
+}
+
+// ===== プレータイム管理 =====
+// 上限チェック付きで加算。実際に加算された分数を返す（0=上限到達）
+function addPlaytime(minutes) {
+  checkWeekReset();
+  const remaining = getWeeklyRemaining(currentDifficulty);
+  const actual = Math.min(minutes, remaining); // 上限を超えない分だけ
+
+  if (actual > 0) {
+    save.playtimeEarned += actual;
+    save.weeklyEarned[currentDifficulty] += actual;
+    const diffNames = { easy:'Lv.1', normal:'Lv.3', hard:'Lv.67' };
+    const modeNames = { 'big-numbers':'大きな数の計算', 'decimal-division':'小数のわり算' };
+    save.history.unshift({
+      date: new Date().toISOString(),
+      type: 'earn',
+      mode: modeNames[currentMode] || currentMode,
+      difficulty: diffNames[currentDifficulty] || currentDifficulty,
+      minutes: actual,
+      correct: session.correctCount,
+      total: session.currentQuestion,
+    });
+  }
+  save.questsCompleted++;
+  writeSave();
+  updatePlaytimeDisplay();
+  return actual;
+}
+
+function usePlaytime() {
+  const remaining = save.playtimeEarned - save.playtimeUsed;
+  const input = document.getElementById('use-time-input');
+  const amount = parseInt(input.value);
+
+  if (isNaN(amount) || amount < 1) {
+    input.style.borderColor = 'var(--rb-red)';
+    setTimeout(() => input.style.borderColor = '', 500);
+    return;
+  }
+  if (amount > remaining) {
+    input.style.borderColor = 'var(--rb-red)';
+    document.getElementById('use-time-hint').textContent =
+      `⚠️ のこりは ${remaining}分だよ！${remaining}分以下を入力してね`;
+    document.getElementById('use-time-hint').style.color = 'var(--rb-red)';
+    setTimeout(() => {
+      document.getElementById('use-time-hint').style.color = '';
+    }, 2000);
+    return;
+  }
+
+  save.playtimeUsed += amount;
+  save.history.unshift({
+    date: new Date().toISOString(),
+    type: 'use',
+    minutes: amount,
+  });
+  writeSave();
+  updatePlaytimeDisplay();
+  input.value = '';
+  renderHistory();
+}
+
+function updatePlaytimeDisplay() {
+  const remaining = save.playtimeEarned - save.playtimeUsed;
+  document.getElementById('playtime-display').textContent = remaining + '分';
+  document.getElementById('banner-playtime').textContent = remaining;
+}
+
+// ===== リザルト =====
+function showResult() {
+  clearInterval(session.timerInterval);
+
+  // 難易度別のご褒美分数
+  const rewardMinutes = { easy: 1, normal: 2, hard: 3 };
+  const minutes = rewardMinutes[currentDifficulty];
+
+  // 上限チェック付きでプレータイム加算
+  const actualEarned = addPlaytime(minutes);
+
+  // プレータイム表示
+  const rewardEl = document.getElementById('playtime-reward');
+  const failEl = document.getElementById('playtime-fail');
+
+  if (actualEarned > 0) {
+    // 獲得できた
+    rewardEl.style.display = 'block';
+    failEl.style.display = 'none';
+    document.getElementById('playtime-reward-time').textContent = `+${actualEarned}分`;
+    document.getElementById('playtime-reward-detail').textContent =
+      `${session.requiredCorrect}問正解クリア！（${session.currentQuestion}問中）`;
+    const weekRemaining = getWeeklyRemaining(currentDifficulty);
+    document.getElementById('res-total-playtime').textContent =
+      (save.playtimeEarned - save.playtimeUsed) + '分'
+      + (weekRemaining <= 0 ? '（今週の上限に達しました！）' : `（今週あと${weekRemaining}分）`);
+  } else {
+    // 週間上限に達していた
+    rewardEl.style.display = 'none';
+    failEl.style.display = 'block';
+    const cap = WEEKLY_CAPS[currentDifficulty];
+    document.getElementById('playtime-fail-detail').textContent =
+      `今週の上限 ${cap}分 に達しているよ！`;
+    document.querySelector('#playtime-fail .playtime-reward-detail:last-child').textContent =
+      '⏰ 来週の月曜にリセットされるよ！XPとコインはもらえたよ！';
+  }
+
+  showScreen('result-screen');
+
+  // 正解率 = 目標正解数 / 出題数
+  const rate = Math.round((session.correctCount / session.currentQuestion) * 100);
+  document.getElementById('res-correct').textContent =
+    `${session.correctCount} / ${session.currentQuestion} 問`;
+  document.getElementById('res-rate').textContent = rate + '%';
+  document.getElementById('res-combo').textContent = session.maxStreak;
+  document.getElementById('res-xp').textContent = session.sessionXP;
+  document.getElementById('res-coins').textContent = 'R$ ' + session.sessionCoins;
+
+  // 平均回答時間（10問以上あれば表示）
+  const avgRow = document.getElementById('res-avgtime-row');
+  if (save.answerTimes.length >= 10) {
+    const avg = save.answerTimes.reduce((a, b) => a + b, 0) / save.answerTimes.length;
+    const sessionAvg = session.totalAnswerTime
+      ? (session.totalAnswerTime / session.correctCount).toFixed(1)
+      : '-';
+    avgRow.style.display = 'flex';
+    document.getElementById('res-avgtime').textContent =
+      `今回 ${sessionAvg}秒 / 全体 ${avg.toFixed(1)}秒`;
+  } else {
+    avgRow.style.display = 'none';
+  }
+
+  // 正解率でグレード判定（少ない問題数でクリアするほど高評価）
+  let grade, title, subtitle;
+  if (rate >= 95) { grade = '🏆'; title = 'PERFECT!'; subtitle = 'ほぼノーミス！天才だ！'; }
+  else if (rate >= 85) { grade = '⭐'; title = 'AMAZING!'; subtitle = '算数マスターだ！'; }
+  else if (rate >= 70) { grade = '👍'; title = 'GREAT!'; subtitle = 'よくがんばった！'; }
+  else { grade = '💪'; title = 'CLEAR!'; subtitle = 'さいごまでがんばったね！'; }
+
+  document.getElementById('result-grade').textContent = grade;
+  document.getElementById('result-title').textContent = title;
+  document.getElementById('result-subtitle').textContent = subtitle;
+
+  spawnParticles();
+}
+
+// ===== プレータイム履歴画面 =====
+function showPlaytimeHistory() {
+  showScreen('history-screen');
+  renderHistory();
+}
+
+function renderHistory() {
+  const remaining = save.playtimeEarned - save.playtimeUsed;
+  document.getElementById('hist-total').textContent = save.playtimeEarned + '分';
+  document.getElementById('hist-used').textContent = save.playtimeUsed + '分';
+  document.getElementById('hist-remaining').textContent = remaining + '分';
+
+  const btn = document.getElementById('use-time-btn');
+  const hint = document.getElementById('use-time-hint');
+  btn.disabled = remaining < 1;
+  if (remaining >= 1) {
+    hint.textContent = `のこり: ${remaining}分（1〜${remaining}分を入力できるよ）`;
+    hint.style.color = '';
+  } else {
+    hint.textContent = '🔒 プレータイムがないよ。クエストをクリアしよう！';
+    hint.style.color = 'var(--rb-yellow)';
+  }
+
+  const listEl = document.getElementById('history-list');
+
+  if (save.history.length === 0) {
+    listEl.innerHTML = '<div class="history-empty">まだ履歴がないよ。クエストをクリアしよう！</div>';
+    return;
+  }
+
+  listEl.innerHTML = save.history.slice(0, 30).map(h => {
+    const d = new Date(h.date);
+    const dateStr = `${d.getMonth()+1}/${d.getDate()} ${d.getHours()}:${String(d.getMinutes()).padStart(2,'0')}`;
+
+    if (h.type === 'earn') {
+      return `
+        <div class="history-item">
+          <div class="history-item-left">
+            <span class="history-item-icon">✅</span>
+            <div>
+              <div>${h.mode}（${h.difficulty}）</div>
+              <div class="history-item-date">${dateStr} · ${h.correct}/${h.total}問正解</div>
+            </div>
+          </div>
+          <div class="history-item-time">+${h.minutes}分</div>
+        </div>`;
+    } else {
+      return `
+        <div class="history-item">
+          <div class="history-item-left">
+            <span class="history-item-icon">🎮</span>
+            <div>
+              <div>Roblox プレータイム使用</div>
+              <div class="history-item-date">${dateStr}</div>
+            </div>
+          </div>
+          <div class="history-item-used">-${h.minutes}分</div>
+        </div>`;
+    }
+  }).join('');
+}
+
+// ===== エフェクト =====
+function showFloatText(text, x, y) {
+  const el = document.createElement('div');
+  el.className = 'float-text';
+  el.textContent = text;
+  el.style.left = x + 'px';
+  el.style.top = y + 'px';
+  document.body.appendChild(el);
+  setTimeout(() => el.remove(), 1000);
+}
+
+function spawnParticles() {
+  const c = document.getElementById('particles');
+  const colors = ['#e2231a','#00a2ff','#f5c542','#00b06f','#9b59b6','#ff6b6b','#cadc3f'];
+  for (let i = 0; i < 50; i++) {
+    const p = document.createElement('div');
+    p.className = 'particle';
+    p.style.left = Math.random() * 100 + '%';
+    p.style.top = '-10px';
+    p.style.background = colors[Math.floor(Math.random() * colors.length)];
+    p.style.animationDelay = Math.random() * 0.6 + 's';
+    p.style.animationDuration = (1 + Math.random() * 0.8) + 's';
+    const size = (5 + Math.random() * 9) + 'px';
+    p.style.width = size;
+    p.style.height = size;
+    c.appendChild(p);
+    setTimeout(() => p.remove(), 2200);
+  }
+}
+
+// ===== ユーティリティ =====
+function randInt(min, max) {
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+function pickFrom(arr) {
+  return arr[Math.floor(Math.random() * arr.length)];
+}
+
+// ===== Service Worker登録（PWA/オフライン対応） =====
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('./sw.js')
+    .then(() => console.log('SW registered'))
+    .catch(err => console.log('SW failed:', err));
+}
+</script>
+
+</body>
+</html>
