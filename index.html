@@ -1383,6 +1383,7 @@ body {
           <div class="playtime-banner-time">
             <div class="playtime-big" id="banner-playtime">0</div>
             <div class="playtime-unit">分 たまってるよ</div>
+            <div id="weekend-pool-info" style="display:none; font-size:0.55rem; color:#ff8c00; font-family:'Noto Sans JP',sans-serif; margin-top:4px;"></div>
           </div>
         </div>
 
@@ -1467,7 +1468,7 @@ body {
             <div class="diff-btn-text">
               <div class="diff-btn-title">レベル１</div>
               <div class="diff-btn-desc" id="diff-easy-desc">小さめの数でれんしゅう</div>
-              <div class="diff-btn-xp">+8 XP / 問 · 🎮 10問正解で2分GET</div>
+              <div class="diff-btn-xp" id="diff-easy-xp">+8 XP / 問 · 🎮 10問正解で2分GET</div>
               <div class="diff-btn-cap" id="diff-easy-cap">今日のこり: 20分 / 20分</div>
             </div>
             <div class="diff-play-btn">▶</div>
@@ -1478,7 +1479,7 @@ body {
             <div class="diff-btn-text">
               <div class="diff-btn-title">レベル3</div>
               <div class="diff-btn-desc" id="diff-normal-desc">4ケタの計算にチャレンジ</div>
-              <div class="diff-btn-xp">+12 XP / 問 · 🎮 9問正解で3分GET</div>
+              <div class="diff-btn-xp" id="diff-normal-xp">+12 XP / 問 · 🎮 9問正解で3分GET</div>
               <div class="diff-btn-cap" id="diff-normal-cap">今日のこり: 20分 / 20分</div>
             </div>
             <div class="diff-play-btn">▶</div>
@@ -1489,7 +1490,7 @@ body {
             <div class="diff-btn-text">
               <div class="diff-btn-title">レベル67</div>
               <div class="diff-btn-desc" id="diff-hard-desc">5ケタ以上の大きな計算</div>
-              <div class="diff-btn-xp">+18 XP / 問 · 🎮 8問正解で5分GET</div>
+              <div class="diff-btn-xp" id="diff-hard-xp">+18 XP / 問 · 🎮 8問正解で5分GET</div>
               <div class="diff-btn-cap" id="diff-hard-cap">今日のこり: 20分 / 20分</div>
             </div>
             <div class="diff-play-btn">▶</div>
@@ -1619,6 +1620,8 @@ body {
           </div>
         </div>
 
+        <div id="hist-weekend-info" style="display:none; text-align:center; padding:10px; margin-top:8px; background:linear-gradient(135deg,#2a1800,#3d2800); border:1px solid #ff8c00; border-radius:10px; font-size:0.75rem; color:#ff8c00; font-family:'Noto Sans JP',sans-serif;"></div>
+
         <div class="history-list-title">📋 HISTORY</div>
         <div class="history-list" id="history-list">
           <div class="history-empty">まだ履歴がないよ。クエストをクリアしよう！</div>
@@ -1680,6 +1683,9 @@ function loadSave() {
     // テストモード
     testModeUnlocked: false,
     robuxMoney: 0,       // US$ Roblox Money
+    // 週末ボーナス
+    weekendBonusPool: 0, // 週末に貯めた未使用分（日曜23:59に失効）
+    weekendId: null,     // 現在の週末ID（土曜日の日付）
   };
 }
 
@@ -1710,15 +1716,45 @@ if (!save.streakDays) {
   save.robuxMoney = 0;
   writeSave();
 }
+// 週末ボーナスのマイグレーション
+if (!('weekendBonusPool' in save)) {
+  save.weekendBonusPool = 0;
+  save.weekendId = null;
+  writeSave();
+}
 
 // ===== 日次キャップ管理 =====
-const DAILY_EARN_CAP = 20;    // 1日に獲得できる上限（分）
+const DAILY_EARN_CAP = 20;    // 平日1日に獲得できる上限（分）
+const DAILY_EARN_CAP_WEEKEND = 40; // 週末は2倍
 const DAILY_USE_CAP = 20;     // 1日に使える上限（分）
 const ROLLOVER_CAP = 120;     // 繰り越し上限（分）= 2時間
 
 function getTodayStr() {
   const now = new Date();
   return now.toISOString().split('T')[0]; // "YYYY-MM-DD"
+}
+
+function isWeekend() {
+  const day = new Date().getDay(); // 0=日, 6=土
+  return day === 0 || day === 6;
+}
+
+function getWeekendId() {
+  // 現在の週末の土曜日の日付を返す（日曜なら前日の土曜）
+  const now = new Date();
+  const day = now.getDay();
+  if (day === 0) {
+    // 日曜 → 前日の土曜
+    const sat = new Date(now);
+    sat.setDate(now.getDate() - 1);
+    return sat.toISOString().split('T')[0];
+  }
+  // 土曜 → 今日
+  return now.toISOString().split('T')[0];
+}
+
+function getTodayEarnCap() {
+  return isWeekend() ? DAILY_EARN_CAP_WEEKEND : DAILY_EARN_CAP;
 }
 
 function checkDayReset() {
@@ -1730,11 +1766,55 @@ function checkDayReset() {
     save.dayStart = today;
     writeSave();
   }
+  // 週末ボーナス失効チェック
+  checkWeekendExpiry();
+}
+
+function checkWeekendExpiry() {
+  if (save.weekendBonusPool <= 0) return;
+  // 平日（月〜金）になったら → 週末ボーナス失効
+  if (!isWeekend()) {
+    const expired = save.weekendBonusPool;
+    save.playtimeEarned -= expired; // 未使用分を取り消し
+    // playtimeEarnedが負にならないようガード
+    if (save.playtimeEarned < save.playtimeUsed) {
+      save.playtimeEarned = save.playtimeUsed;
+    }
+    save.weekendBonusPool = 0;
+    save.weekendId = null;
+    // 失効履歴を記録
+    save.history.unshift({
+      date: new Date().toISOString(),
+      type: 'weekend-expire',
+      minutes: expired,
+    });
+    writeSave();
+  }
+  // 新しい週末になった場合もリセット
+  if (isWeekend() && save.weekendId !== getWeekendId()) {
+    // 前の週末のボーナスが残っている → 失効
+    const expired = save.weekendBonusPool;
+    if (expired > 0) {
+      save.playtimeEarned -= expired;
+      if (save.playtimeEarned < save.playtimeUsed) {
+        save.playtimeEarned = save.playtimeUsed;
+      }
+      save.history.unshift({
+        date: new Date().toISOString(),
+        type: 'weekend-expire',
+        minutes: expired,
+      });
+    }
+    save.weekendBonusPool = 0;
+    save.weekendId = getWeekendId();
+    writeSave();
+  }
 }
 
 function getDailyEarnRemaining() {
   checkDayReset();
-  return Math.max(0, DAILY_EARN_CAP - save.dailyEarned);
+  const cap = getTodayEarnCap();
+  return Math.max(0, cap - save.dailyEarned);
 }
 
 function getDailyUseRemaining() {
@@ -1918,14 +1998,31 @@ function updateDailyCapDisplay() {
   const earnRemaining = getDailyEarnRemaining();
   const balance = save.playtimeEarned - save.playtimeUsed;
   const rolloverSpace = getRolloverRemaining();
+  const weekend = isWeekend();
+  const todayCap = getTodayEarnCap();
+
+  // 報酬表示を週末対応に更新
+  const baseXP = { easy: 8, normal: 12, hard: 18 };
+  const baseReward = { easy: 2, normal: 3, hard: 5 };
+  const goals = { easy: 10, normal: 9, hard: 8 };
+  ['easy','normal','hard'].forEach(d => {
+    const r = weekend ? baseReward[d] * 2 : baseReward[d];
+    const xpEl = document.getElementById(`diff-${d}-xp`);
+    if (xpEl) {
+      const wkLabel = weekend ? ' 🎉×2' : '';
+      xpEl.textContent = `+${baseXP[d]} XP / 問 · 🎮 ${goals[d]}問正解で${r}分GET${wkLabel}`;
+    }
+  });
 
   const diffs = ['easy', 'normal', 'hard'];
   diffs.forEach(d => {
     const capEl = document.getElementById(`diff-${d}-cap`);
     const btnEl = document.getElementById(`diff-btn-${d}`);
 
+    let weekendTag = weekend ? '🎉 週末×2ボーナス！ ' : '';
+
     if (earnRemaining <= 0) {
-      capEl.textContent = `🔒 今日の獲得上限 ${DAILY_EARN_CAP}分に達しました！`;
+      capEl.textContent = `🔒 今日の獲得上限 ${todayCap}分に達しました！`;
       capEl.className = 'diff-btn-cap cap-full';
       btnEl.classList.add('capped');
     } else if (rolloverSpace <= 0) {
@@ -1933,7 +2030,7 @@ function updateDailyCapDisplay() {
       capEl.className = 'diff-btn-cap cap-full';
       btnEl.classList.add('capped');
     } else {
-      capEl.textContent = `今日のこり: ${earnRemaining}分 / ${DAILY_EARN_CAP}分（ストック: ${balance}分 / ${ROLLOVER_CAP}分）`;
+      capEl.textContent = `${weekendTag}今日のこり: ${earnRemaining}分 / ${todayCap}分（ストック: ${balance}分 / ${ROLLOVER_CAP}分）`;
       capEl.className = 'diff-btn-cap';
       btnEl.classList.remove('capped');
     }
@@ -2260,21 +2357,28 @@ function showLevelUp() {
 }
 
 // ===== プレータイム管理 =====
-// 日次上限 & 繰り越し上限チェック付きで加算。実際に加算された分数を返す（0=上限到達）
-// 戻り値: { actual: 実際に加算された分, reason: 'ok'|'daily_cap'|'rollover_cap' }
+// 日次上限 & 繰り越し上限チェック付き。週末は報酬2倍＋プール管理。
 function addPlaytime(minutes) {
   checkDayReset();
+
+  // 週末は報酬2倍！
+  const weekend = isWeekend();
+  const effectiveMinutes = weekend ? minutes * 2 : minutes;
+
   const dailyRemain = getDailyEarnRemaining();
   const rolloverRemain = getRolloverRemaining();
-  const actual = Math.min(minutes, dailyRemain, rolloverRemain);
-
-  let reason = 'ok';
-  if (dailyRemain <= 0) reason = 'daily_cap';
-  else if (rolloverRemain <= 0) reason = 'rollover_cap';
+  const actual = Math.min(effectiveMinutes, dailyRemain, rolloverRemain);
 
   if (actual > 0) {
     save.playtimeEarned += actual;
     save.dailyEarned += actual;
+
+    // 週末ボーナスプールに加算
+    if (weekend) {
+      if (!save.weekendId) save.weekendId = getWeekendId();
+      save.weekendBonusPool += actual;
+    }
+
     const diffNames = { easy:'Lv.1', normal:'Lv.3', hard:'Lv.67' };
     const modeNames = { 'big-numbers':'大きな数の計算', 'decimal-division':'小数のわり算' };
     save.history.unshift({
@@ -2285,6 +2389,7 @@ function addPlaytime(minutes) {
       minutes: actual,
       correct: session.correctCount,
       total: session.currentQuestion,
+      weekend: weekend,
     });
   }
   save.questsCompleted++;
@@ -2328,6 +2433,13 @@ function usePlaytime() {
 
   save.playtimeUsed += amount;
   save.dailyUsed += amount;
+
+  // 週末ボーナスプールから先に消費
+  if (save.weekendBonusPool > 0) {
+    const fromPool = Math.min(amount, save.weekendBonusPool);
+    save.weekendBonusPool -= fromPool;
+  }
+
   save.history.unshift({
     date: new Date().toISOString(),
     type: 'use',
@@ -2343,6 +2455,16 @@ function updatePlaytimeDisplay() {
   const remaining = save.playtimeEarned - save.playtimeUsed;
   document.getElementById('playtime-display').textContent = remaining + '分';
   document.getElementById('banner-playtime').textContent = remaining;
+  // 週末ボーナスプール表示
+  const poolEl = document.getElementById('weekend-pool-info');
+  if (poolEl) {
+    if (save.weekendBonusPool > 0) {
+      poolEl.textContent = `⏰ 週末ボーナス ${save.weekendBonusPool}分（日曜23:59に失効）`;
+      poolEl.style.display = 'block';
+    } else {
+      poolEl.style.display = 'none';
+    }
+  }
 }
 
 // ===== リザルト =====
@@ -2373,7 +2495,8 @@ function showResult() {
     // 獲得できた
     rewardEl.style.display = 'block';
     failEl.style.display = 'none';
-    document.getElementById('playtime-reward-time').textContent = `+${actualEarned}分`;
+    const weekendLabel = isWeekend() ? ' 🎉×2 WEEKEND BONUS!' : '';
+    document.getElementById('playtime-reward-time').textContent = `+${actualEarned}分${weekendLabel}`;
     document.getElementById('playtime-reward-detail').textContent =
       `${session.requiredCorrect}問正解クリア！（${session.currentQuestion}問中）`;
     const balance = save.playtimeEarned - save.playtimeUsed;
@@ -2381,6 +2504,7 @@ function showResult() {
     let statusText = `ストック: ${balance}分 / ${ROLLOVER_CAP}分`;
     if (earnRemain <= 0) statusText += '（今日の獲得上限に達しました！）';
     else statusText += `（今日あと${earnRemain}分もらえるよ）`;
+    if (save.weekendBonusPool > 0) statusText += `\n⏰ 週末ボーナス${save.weekendBonusPool}分は日曜23:59に失効`;
     document.getElementById('res-total-playtime').textContent = statusText;
   } else {
     // 上限に達していた
@@ -2458,9 +2582,25 @@ function renderHistory() {
   document.getElementById('hist-remaining').textContent = balance + '分';
 
   // 日次サマリー
-  document.getElementById('hist-daily-earn').textContent = `${save.dailyEarned}/${DAILY_EARN_CAP}分`;
+  const todayCap = getTodayEarnCap();
+  document.getElementById('hist-daily-earn').textContent = `${save.dailyEarned}/${todayCap}分`;
+  document.getElementById('hist-daily-earn').style.color = isWeekend() ? '#ff8c00' : '';
   document.getElementById('hist-daily-use').textContent = `${save.dailyUsed}/${DAILY_USE_CAP}分`;
   document.getElementById('hist-rollover').textContent = `${balance}/${ROLLOVER_CAP}分`;
+
+  // 週末ボーナスプール表示
+  const weekendInfo = document.getElementById('hist-weekend-info');
+  if (weekendInfo) {
+    if (save.weekendBonusPool > 0) {
+      weekendInfo.textContent = `🎉 週末ボーナス ${save.weekendBonusPool}分（日曜23:59に失効）`;
+      weekendInfo.style.display = 'block';
+    } else if (isWeekend()) {
+      weekendInfo.textContent = '🎉 週末×2ボーナス中！たくさん貯めよう！';
+      weekendInfo.style.display = 'block';
+    } else {
+      weekendInfo.style.display = 'none';
+    }
+  }
 
   const btn = document.getElementById('use-time-btn');
   const hint = document.getElementById('use-time-hint');
@@ -2488,16 +2628,29 @@ function renderHistory() {
     const dateStr = `${d.getMonth()+1}/${d.getDate()} ${d.getHours()}:${String(d.getMinutes()).padStart(2,'0')}`;
 
     if (h.type === 'earn') {
+      const wkTag = h.weekend ? ' <span style="color:#ff8c00;">×2</span>' : '';
       return `
-        <div class="history-item">
+        <div class="history-item"${h.weekend ? ' style="border-left: 3px solid #ff8c00;"' : ''}>
           <div class="history-item-left">
-            <span class="history-item-icon">✅</span>
+            <span class="history-item-icon">${h.weekend ? '🎉' : '✅'}</span>
             <div>
-              <div>${h.mode}（${h.difficulty}）</div>
+              <div>${h.mode}（${h.difficulty}）${wkTag}</div>
               <div class="history-item-date">${dateStr} · ${h.correct}/${h.total}問正解</div>
             </div>
           </div>
           <div class="history-item-time">+${h.minutes}分</div>
+        </div>`;
+    } else if (h.type === 'weekend-expire') {
+      return `
+        <div class="history-item" style="border-left: 3px solid #e74c3c;">
+          <div class="history-item-left">
+            <span class="history-item-icon">⏰</span>
+            <div>
+              <div style="color:#e74c3c;">週末ボーナス失効</div>
+              <div class="history-item-date">${dateStr}</div>
+            </div>
+          </div>
+          <div class="history-item-used" style="color:#e74c3c;">-${h.minutes}分</div>
         </div>`;
     } else if (h.type === 'test-pass') {
       return `
