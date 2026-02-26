@@ -1042,6 +1042,169 @@ body {
   font-family: 'Noto Sans JP', sans-serif;
 }
 
+/* ===== ストリークバナー ===== */
+.streak-banner {
+  background: linear-gradient(135deg, #2a1800, #3d2800);
+  border: 2px solid #ff8c00;
+  border-radius: 14px;
+  padding: 14px 20px;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.streak-banner-fire { font-size: 2rem; }
+.streak-banner-info { flex: 1; }
+.streak-banner-title {
+  font-size: 0.85rem;
+  color: #ff8c00;
+  letter-spacing: 1px;
+}
+.streak-banner-days {
+  display: flex;
+  gap: 6px;
+  margin-top: 6px;
+}
+.streak-day {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.7rem;
+  border: 2px solid #555;
+  background: var(--rb-surface);
+  color: var(--rb-text-dim);
+}
+.streak-day.done {
+  border-color: #ff8c00;
+  background: #ff8c00;
+  color: #fff;
+}
+.streak-day.today {
+  border-color: var(--rb-yellow);
+  box-shadow: 0 0 8px rgba(245,197,66,0.4);
+}
+.streak-banner-count {
+  font-size: 1.5rem;
+  color: #ff8c00;
+  text-align: center;
+}
+.streak-banner-label {
+  font-size: 0.55rem;
+  color: var(--rb-text-dim);
+  font-family: 'Noto Sans JP', sans-serif;
+}
+
+/* ===== テストモードタイル ===== */
+.test-mode-section {
+  margin-top: 20px;
+}
+.test-mode-tile {
+  background: linear-gradient(135deg, #1a0030, #2d004d);
+  border: 2px solid #9b59b6;
+  border-radius: 14px;
+  padding: 20px;
+  cursor: pointer;
+  transition: all 0.15s;
+  position: relative;
+  overflow: hidden;
+}
+.test-mode-tile:hover { transform: translateY(-2px); filter: brightness(1.1); }
+.test-mode-tile.locked {
+  opacity: 0.6;
+  cursor: not-allowed;
+  filter: grayscale(0.5);
+}
+.test-mode-tile.locked:hover { transform: none; filter: grayscale(0.5); }
+.test-mode-tile-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+.test-mode-tile-icon { font-size: 2rem; }
+.test-mode-tile-title {
+  font-size: 1.1rem;
+  color: #d4a0ff;
+  letter-spacing: 1px;
+}
+.test-mode-tile-badge {
+  position: absolute;
+  top: 12px;
+  right: 14px;
+  background: #9b59b6;
+  color: white;
+  font-size: 0.55rem;
+  padding: 3px 10px;
+  border-radius: 10px;
+  letter-spacing: 1px;
+}
+.test-mode-tile-desc {
+  font-size: 0.75rem;
+  color: var(--rb-text-dim);
+  font-family: 'Noto Sans JP', sans-serif;
+  line-height: 1.5;
+}
+.test-mode-tile-reward {
+  margin-top: 10px;
+  font-size: 0.8rem;
+  color: var(--rb-yellow);
+  font-family: 'Noto Sans JP', sans-serif;
+}
+.test-mode-tile-lock {
+  margin-top: 8px;
+  font-size: 0.7rem;
+  color: #ff6b6b;
+  font-family: 'Noto Sans JP', sans-serif;
+}
+
+/* ===== Roblox Money表示 ===== */
+.robux-money-badge {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: linear-gradient(135deg, #2d004d, #1a0030);
+  border: 1px solid #9b59b6;
+  padding: 6px 12px;
+  border-radius: 20px;
+  cursor: pointer;
+}
+.robux-money-icon {
+  font-size: 0.9rem;
+}
+.robux-money-value {
+  font-size: 0.75rem;
+  color: #d4a0ff;
+}
+
+/* ===== テストリザルト報酬 ===== */
+.money-reward {
+  background: linear-gradient(135deg, #1a0030, #2d004d);
+  border: 2px solid #9b59b6;
+  border-radius: 14px;
+  padding: 20px;
+  margin-top: 16px;
+  text-align: center;
+}
+.money-reward-title {
+  font-size: 1rem;
+  color: #d4a0ff;
+  margin-bottom: 6px;
+}
+.money-reward-amount {
+  font-size: 2.5rem;
+  color: var(--rb-yellow);
+  text-shadow: 0 4px 12px rgba(245,197,66,0.5);
+}
+.money-reward-total {
+  font-size: 0.75rem;
+  color: var(--rb-text-dim);
+  font-family: 'Noto Sans JP', sans-serif;
+  margin-top: 8px;
+}
+
 /* ===== アニメーション ===== */
 @keyframes shake {
   0%, 100% { transform: translateX(0); }
@@ -1169,6 +1332,10 @@ body {
             <div class="playtime-label">プレータイム</div>
           </div>
         </div>
+        <div class="robux-money-badge" title="Roblox Money（テストモードで獲得）">
+          <span class="robux-money-icon">💵</span>
+          <span class="robux-money-value" id="robux-money-display">$0</span>
+        </div>
         <div class="robux-badge">
           <div class="robux-icon">R$</div>
           <span id="robux">0</span>
@@ -1219,6 +1386,21 @@ body {
           </div>
         </div>
 
+        <!-- ストリークバナー -->
+        <div class="streak-banner slide-up" id="streak-banner">
+          <div class="streak-banner-fire">🔥</div>
+          <div class="streak-banner-info">
+            <div class="streak-banner-title">DAILY STREAK</div>
+            <div class="streak-banner-days" id="streak-days">
+              <!-- JSで7日分を描画 -->
+            </div>
+          </div>
+          <div>
+            <div class="streak-banner-count" id="streak-count">0</div>
+            <div class="streak-banner-label">日れんぞく</div>
+          </div>
+        </div>
+
         <div class="section-header slide-up">
           <span class="icon">🎯</span> QUEST SELECT
         </div>
@@ -1246,6 +1428,26 @@ body {
               <div class="tile-title">小数のわり算</div>
               <div class="tile-desc">小数点がある わり算の問題にチャレンジ！</div>
             </div>
+          </div>
+        </div>
+
+        <!-- テストモード -->
+        <div class="test-mode-section slide-up">
+          <div class="section-header">
+            <span class="icon">📝</span> TEST MODE
+          </div>
+          <div class="test-mode-tile" id="test-mode-tile" onclick="startTestMode()">
+            <div class="test-mode-tile-badge" id="test-mode-badge">🔒 LOCKED</div>
+            <div class="test-mode-tile-header">
+              <div class="test-mode-tile-icon">📝</div>
+              <div class="test-mode-tile-title">ROBLOX MONEY TEST</div>
+            </div>
+            <div class="test-mode-tile-desc">
+              20問のミックステスト（大きな数＋小数わり算、全レベルランダム）<br>
+              80%以上正解で <b style="color:var(--rb-yellow)">US$1 Roblox Money</b> をゲット！
+            </div>
+            <div class="test-mode-tile-reward">💰 報酬: 80%以上正解（16問以上） → US$1</div>
+            <div class="test-mode-tile-lock" id="test-mode-lock-msg">🔒 7日れんぞくで問題を解くとアンロック！</div>
           </div>
         </div>
 
@@ -1473,6 +1675,11 @@ function loadSave() {
     dayStart: null,      // 今日の日付 (YYYY-MM-DD)
     // 平均回答時間トラッキング
     answerTimes: [],     // 直近の回答時間（秒）を保持
+    // ストリーク（連続日数）
+    streakDays: [],      // 問題を解いた日の配列 ["2026-02-24","2026-02-25",...]
+    // テストモード
+    testModeUnlocked: false,
+    robuxMoney: 0,       // US$ Roblox Money
   };
 }
 
@@ -1494,6 +1701,13 @@ if (!('dailyEarned' in save)) {
 }
 if (!save.answerTimes) {
   save.answerTimes = [];
+  writeSave();
+}
+// ストリーク＆テストモードのマイグレーション
+if (!save.streakDays) {
+  save.streakDays = [];
+  save.testModeUnlocked = false;
+  save.robuxMoney = 0;
   writeSave();
 }
 
@@ -1533,6 +1747,98 @@ function getRolloverRemaining() {
   return Math.max(0, ROLLOVER_CAP - balance);
 }
 
+// ===== ストリーク管理 =====
+function recordQuestDay() {
+  const today = getTodayStr();
+  if (!save.streakDays.includes(today)) {
+    save.streakDays.push(today);
+    // 最大30日分だけ保持（メモリ節約）
+    if (save.streakDays.length > 30) {
+      save.streakDays = save.streakDays.slice(-30);
+    }
+    writeSave();
+  }
+  checkTestModeUnlock();
+}
+
+function getConsecutiveDays() {
+  if (save.streakDays.length === 0) return 0;
+  const sorted = [...save.streakDays].sort().reverse(); // 新しい順
+  const today = getTodayStr();
+  const yesterday = getDateStr(-1);
+
+  // 今日か昨日に解いてなければストリーク0
+  if (sorted[0] !== today && sorted[0] !== yesterday) return 0;
+
+  let count = 1;
+  for (let i = 0; i < sorted.length - 1; i++) {
+    const curr = new Date(sorted[i]);
+    const prev = new Date(sorted[i + 1]);
+    const diffMs = curr.getTime() - prev.getTime();
+    const diffDays = Math.round(diffMs / (1000 * 60 * 60 * 24));
+    if (diffDays === 1) {
+      count++;
+    } else {
+      break;
+    }
+  }
+  return count;
+}
+
+function getDateStr(offset) {
+  const d = new Date();
+  d.setDate(d.getDate() + offset);
+  return d.toISOString().split('T')[0];
+}
+
+function checkTestModeUnlock() {
+  if (save.testModeUnlocked) return;
+  if (getConsecutiveDays() >= 7) {
+    save.testModeUnlocked = true;
+    writeSave();
+  }
+}
+
+function updateStreakUI() {
+  const streak = getConsecutiveDays();
+  document.getElementById('streak-count').textContent = streak;
+
+  // 7日分のドット表示
+  const container = document.getElementById('streak-days');
+  const today = new Date();
+  let html = '';
+  for (let i = 6; i >= 0; i--) {
+    const d = new Date(today);
+    d.setDate(today.getDate() - i);
+    const dateStr = d.toISOString().split('T')[0];
+    const done = save.streakDays.includes(dateStr);
+    const isToday = i === 0;
+    const dayLabel = ['日','月','火','水','木','金','土'][d.getDay()];
+    html += `<div class="streak-day${done ? ' done' : ''}${isToday ? ' today' : ''}">${done ? '✓' : dayLabel}</div>`;
+  }
+  container.innerHTML = html;
+
+  // テストモードのロック状態
+  const tile = document.getElementById('test-mode-tile');
+  const badge = document.getElementById('test-mode-badge');
+  const lockMsg = document.getElementById('test-mode-lock-msg');
+
+  if (save.testModeUnlocked) {
+    tile.classList.remove('locked');
+    badge.textContent = '💰 UNLOCKED';
+    badge.style.background = '#27ae60';
+    lockMsg.innerHTML = `✅ アンロック済み！ ｜ 💵 獲得済み: <b>US$${save.robuxMoney}</b>`;
+    lockMsg.style.color = 'var(--rb-green)';
+  } else {
+    tile.classList.add('locked');
+    const remaining = 7 - streak;
+    badge.textContent = '🔒 LOCKED';
+    badge.style.background = '#9b59b6';
+    lockMsg.textContent = `🔒 あと${remaining}日れんぞくで問題を解くとアンロック！（${streak}/7日）`;
+    lockMsg.style.color = '#ff6b6b';
+  }
+}
+
 // ===== セッション状態 =====
 const session = {
   streak: 0,
@@ -1556,7 +1862,14 @@ function initUI() {
   document.getElementById('robux').textContent = save.totalCoins;
   updatePlaytimeDisplay();
   updateXPBar();
+  updateRobuxMoneyDisplay();
+  updateStreakUI();
 }
+
+function updateRobuxMoneyDisplay() {
+  document.getElementById('robux-money-display').textContent = `$${save.robuxMoney}`;
+}
+
 initUI();
 
 // ===== 画面切り替え =====
@@ -1576,6 +1889,7 @@ function goToStart() {
   clearInterval(session.timerInterval);
   showScreen('start-screen');
   document.getElementById('banner-playtime').textContent = save.playtimeEarned - save.playtimeUsed;
+  updateStreakUI();
 }
 
 // ===== モード選択 → 難易度画面 =====
@@ -1908,7 +2222,7 @@ function checkAnswer() {
     fb.innerHTML = `❌ ざんねん！ 答えは <b>${session.currentAnswer}</b>`;
   }
 
-  setTimeout(nextQuestion, 1800);
+  setTimeout(isTestMode ? nextTestQuestion : nextQuestion, 1800);
 }
 
 // Enterキー
@@ -1974,6 +2288,7 @@ function addPlaytime(minutes) {
     });
   }
   save.questsCompleted++;
+  recordQuestDay(); // ストリーク記録
   writeSave();
   updatePlaytimeDisplay();
   return actual;
@@ -2033,6 +2348,15 @@ function updatePlaytimeDisplay() {
 // ===== リザルト =====
 function showResult() {
   clearInterval(session.timerInterval);
+
+  // 通常モード: ボタンをリセット（テストモード後の場合）
+  const btnPrimary = document.querySelector('.result-content .btn-primary');
+  btnPrimary.setAttribute('onclick', `selectMode('${currentMode}')`);
+  btnPrimary.textContent = 'もう一回!';
+
+  // money-rewardを非表示（テストモードのリザルト要素）
+  const moneyRewardEl = document.getElementById('money-reward');
+  if (moneyRewardEl) moneyRewardEl.style.display = 'none';
 
   // 難易度別のご褒美分数
   const rewardMinutes = { easy: 1, normal: 2, hard: 3 };
@@ -2175,6 +2499,30 @@ function renderHistory() {
           </div>
           <div class="history-item-time">+${h.minutes}分</div>
         </div>`;
+    } else if (h.type === 'test-pass') {
+      return `
+        <div class="history-item" style="border-left: 3px solid #9b59b6;">
+          <div class="history-item-left">
+            <span class="history-item-icon">💰</span>
+            <div>
+              <div style="color:#d4a0ff;">TEST合格！</div>
+              <div class="history-item-date">${dateStr} · ${h.correct}/${h.total}問正解</div>
+            </div>
+          </div>
+          <div class="history-item-time" style="color:#d4a0ff;">+US$${h.dollars || 1}</div>
+        </div>`;
+    } else if (h.type === 'test-fail') {
+      return `
+        <div class="history-item" style="border-left: 3px solid #666;">
+          <div class="history-item-left">
+            <span class="history-item-icon">📝</span>
+            <div>
+              <div style="color:var(--rb-text-dim);">TEST不合格</div>
+              <div class="history-item-date">${dateStr} · ${h.correct}/${h.total}問正解</div>
+            </div>
+          </div>
+          <div class="history-item-used">US$0</div>
+        </div>`;
     } else {
       return `
         <div class="history-item">
@@ -2228,6 +2576,214 @@ function randInt(min, max) {
 function pickFrom(arr) {
   return arr[Math.floor(Math.random() * arr.length)];
 }
+
+// ===== テストモード =====
+let isTestMode = false;
+const TEST_TOTAL_QUESTIONS = 20;
+const TEST_PASS_RATE = 0.8; // 80%
+const TEST_REWARD_DOLLARS = 1;
+
+function startTestMode() {
+  if (!save.testModeUnlocked) {
+    // ロック中 - 何もしない
+    return;
+  }
+
+  isTestMode = true;
+  currentMode = 'test';
+  currentDifficulty = 'normal'; // 問題生成時にランダムで切り替え
+
+  session.currentQuestion = 0;
+  session.correctCount = 0;
+  session.streak = 0;
+  session.maxStreak = 0;
+  session.sessionXP = 0;
+  session.sessionCoins = 0;
+  session.totalAnswerTime = 0;
+  session.requiredCorrect = TEST_TOTAL_QUESTIONS; // 20問全部出す
+  document.getElementById('streak').textContent = '0';
+  document.getElementById('combo-indicator').classList.remove('show');
+
+  document.getElementById('game-mode-tag').textContent =
+    '📝 TEST MODE · 20問ミックス · 80%以上でUS$1 GET!';
+
+  showScreen('game-screen');
+  nextTestQuestion();
+}
+
+function nextTestQuestion() {
+  // 20問出し切ったらリザルト
+  if (session.currentQuestion >= TEST_TOTAL_QUESTIONS) {
+    showTestResult();
+    return;
+  }
+
+  session.currentQuestion++;
+  document.getElementById('question-counter').textContent =
+    `✅ ${session.correctCount} / ${session.currentQuestion - 1} 正解　（${session.currentQuestion} / ${TEST_TOTAL_QUESTIONS}問目）`;
+
+  // ランダムにモードと難易度を選択
+  const modes = ['big-numbers', 'decimal-division'];
+  const diffs = ['easy', 'normal', 'hard'];
+  const pickMode = pickFrom(modes);
+  currentDifficulty = pickFrom(diffs); // 一時的に難易度を切り替え
+
+  const q = pickMode === 'big-numbers'
+    ? generateBigNumberQuestion()
+    : generateDecimalDivisionQuestion();
+
+  session.currentAnswer = q.answer;
+  document.getElementById('question-text').textContent = q.text;
+  document.getElementById('question-hint').textContent = q.hint || '';
+
+  const input = document.getElementById('answer-input');
+  input.value = '';
+  input.className = 'answer-input';
+  input.focus();
+  document.getElementById('feedback').textContent = '';
+  document.getElementById('feedback').className = 'feedback';
+  document.getElementById('submit-btn').disabled = false;
+
+  // ストップウォッチ開始
+  clearInterval(session.timerInterval);
+  session.questionStartTime = Date.now();
+  session.elapsed = 0;
+  const swEl = document.getElementById('stopwatch');
+  swEl.textContent = '⏱ 0.0秒';
+  swEl.classList.remove('fast');
+  session.timerInterval = setInterval(() => {
+    session.elapsed = (Date.now() - session.questionStartTime) / 1000;
+    swEl.textContent = `⏱ ${session.elapsed.toFixed(1)}秒`;
+  }, 100);
+
+  // 平均表示
+  const avgEl = document.getElementById('avg-time-display');
+  if (save.answerTimes.length >= 10) {
+    const avg = save.answerTimes.reduce((a, b) => a + b, 0) / save.answerTimes.length;
+    avgEl.textContent = `⚡ 平均 ${avg.toFixed(1)}秒`;
+  } else {
+    avgEl.textContent = '';
+  }
+}
+
+function showTestResult() {
+  clearInterval(session.timerInterval);
+  isTestMode = false;
+
+  const rate = session.correctCount / TEST_TOTAL_QUESTIONS;
+  const passed = rate >= TEST_PASS_RATE;
+
+  // ストリーク記録（テストも1日の問題として記録）
+  recordQuestDay();
+
+  // XP & コインはもらえる
+  save.totalCoins += session.sessionCoins;
+  document.getElementById('robux').textContent = save.totalCoins;
+
+  showScreen('result-screen');
+
+  // 基本リザルト
+  document.getElementById('res-correct').textContent =
+    `${session.correctCount} / ${TEST_TOTAL_QUESTIONS} 問`;
+  document.getElementById('res-rate').textContent = Math.round(rate * 100) + '%';
+  document.getElementById('res-combo').textContent = session.maxStreak;
+  document.getElementById('res-xp').textContent = session.sessionXP;
+  document.getElementById('res-coins').textContent = 'R$ ' + session.sessionCoins;
+
+  // 平均回答時間
+  const avgRow = document.getElementById('res-avgtime-row');
+  if (save.answerTimes.length >= 10) {
+    const avg = save.answerTimes.reduce((a, b) => a + b, 0) / save.answerTimes.length;
+    const sessionAvg = session.totalAnswerTime
+      ? (session.totalAnswerTime / session.correctCount).toFixed(1)
+      : '-';
+    avgRow.style.display = 'flex';
+    document.getElementById('res-avgtime').textContent =
+      `今回 ${sessionAvg}秒 / 全体 ${avg.toFixed(1)}秒`;
+  } else {
+    avgRow.style.display = 'none';
+  }
+
+  // グレード
+  let grade, title, subtitle;
+  if (passed) {
+    if (rate >= 0.95) { grade = '🏆'; title = 'PERFECT!'; subtitle = '天才！US$1 GET！'; }
+    else if (rate >= 0.9) { grade = '⭐'; title = 'EXCELLENT!'; subtitle = 'すばらしい！US$1 GET！'; }
+    else { grade = '💰'; title = 'PASSED!'; subtitle = '合格！US$1 GET！'; }
+  } else {
+    grade = '💪'; title = 'NOT YET...'; subtitle = 'もうすこし！80%をめざそう！';
+  }
+  document.getElementById('result-grade').textContent = grade;
+  document.getElementById('result-title').textContent = title;
+  document.getElementById('result-subtitle').textContent = subtitle;
+
+  // プレータイム報酬は非表示（テストモードではプレータイムなし）
+  document.getElementById('playtime-reward').style.display = 'none';
+  document.getElementById('playtime-fail').style.display = 'none';
+
+  // Money報酬表示を管理
+  let moneyRewardEl = document.getElementById('money-reward');
+  if (!moneyRewardEl) {
+    // 初回: 要素を作成
+    moneyRewardEl = document.createElement('div');
+    moneyRewardEl.className = 'money-reward';
+    moneyRewardEl.id = 'money-reward';
+    const resultContent = document.querySelector('.result-content');
+    const btnGroup = resultContent.querySelector('.btn-group');
+    resultContent.insertBefore(moneyRewardEl, btnGroup);
+  }
+
+  if (passed) {
+    save.robuxMoney += TEST_REWARD_DOLLARS;
+    save.history.unshift({
+      date: new Date().toISOString(),
+      type: 'test-pass',
+      minutes: 0,
+      dollars: TEST_REWARD_DOLLARS,
+      correct: session.correctCount,
+      total: TEST_TOTAL_QUESTIONS,
+    });
+    writeSave();
+    updateRobuxMoneyDisplay();
+
+    moneyRewardEl.style.display = 'block';
+    moneyRewardEl.innerHTML = `
+      <div class="money-reward-title">💰 ROBLOX MONEY GET!</div>
+      <div class="money-reward-amount">+US$${TEST_REWARD_DOLLARS}</div>
+      <div class="money-reward-total">トータル: <b>US$${save.robuxMoney}</b></div>
+    `;
+  } else {
+    const needed = Math.ceil(TEST_TOTAL_QUESTIONS * TEST_PASS_RATE);
+    const diff = needed - session.correctCount;
+
+    save.history.unshift({
+      date: new Date().toISOString(),
+      type: 'test-fail',
+      minutes: 0,
+      correct: session.correctCount,
+      total: TEST_TOTAL_QUESTIONS,
+    });
+    writeSave();
+
+    moneyRewardEl.style.display = 'block';
+    moneyRewardEl.innerHTML = `
+      <div class="money-reward-title" style="color:#ff6b6b;">😢 あと${diff}問足りなかった...</div>
+      <div class="money-reward-amount" style="color:var(--rb-text-dim); font-size:1.5rem;">US$0</div>
+      <div class="money-reward-total">${needed}問以上正解（80%）で US$1 GET！<br>がんばってもう一回チャレンジしよう！</div>
+    `;
+  }
+
+  // 「もう一回」ボタンをテストモード用に調整
+  const btnPrimary = document.querySelector('.result-content .btn-primary');
+  btnPrimary.setAttribute('onclick', 'startTestMode()');
+  btnPrimary.textContent = 'テストもう一回!';
+
+  spawnParticles();
+}
+
+// ===== テストモードの回答チェック =====
+// checkAnswer() を拡張するため、既存のnextQuestionをラップ
+const originalNextQuestion = nextQuestion;
 
 // ===== Service Worker登録（PWA/オフライン対応） =====
 if ('serviceWorker' in navigator) {
