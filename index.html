@@ -1415,7 +1415,7 @@ body {
             </div>
             <div class="tile-info">
               <div class="tile-title">大きな数の計算</div>
-              <div class="tile-desc">4ケタ以上の たし算・ひき算・かけ算にチャレンジ！</div>
+              <div class="tile-desc">たし算・ひき算・かけ算にチャレンジ！</div>
             </div>
           </div>
 
@@ -1979,14 +1979,14 @@ function selectMode(mode) {
 
   if (mode === 'big-numbers') {
     document.getElementById('diff-mode-title').textContent = '🔢 大きな数の計算';
-    document.getElementById('diff-easy-desc').textContent = '3ケタ + 3ケタ などの計算';
-    document.getElementById('diff-normal-desc').textContent = '4ケタの たし算・ひき算・かけ算';
-    document.getElementById('diff-hard-desc').textContent = '5ケタ以上の計算や 3ケタ×2ケタ';
+    document.getElementById('diff-easy-desc').textContent = '2ケタの たし算・ひき算・かけ算';
+    document.getElementById('diff-normal-desc').textContent = '3ケタの計算（かけ算は2ケタまで）';
+    document.getElementById('diff-hard-desc').textContent = '4ケタの計算（かけ算は3ケタまで）';
   } else {
     document.getElementById('diff-mode-title').textContent = '➗ 小数のわり算';
-    document.getElementById('diff-easy-desc').textContent = 'やさしい小数のわり算';
-    document.getElementById('diff-normal-desc').textContent = '小数÷整数、整数÷小数';
-    document.getElementById('diff-hard-desc').textContent = '小数÷小数やふくざつな計算';
+    document.getElementById('diff-easy-desc').textContent = '2ケタ÷1ケタの小数わり算';
+    document.getElementById('diff-normal-desc').textContent = '2ケタ同士のわり算・小数÷小数';
+    document.getElementById('diff-hard-desc').textContent = '3ケタのわり算・ふくざつな小数';
   }
 
   // 日次キャップ表示を更新
@@ -2071,26 +2071,26 @@ function generateBigNumberQuestion() {
   let a, b, answer;
 
   if (currentDifficulty === 'easy') {
-    // かんたん: 3ケタ同士
-    if (op === '+') { a = randInt(100, 999); b = randInt(100, 999); answer = a + b; }
-    else if (op === '-') { a = randInt(200, 999); b = randInt(100, a); answer = a - b; }
+    // Lv.1: 2ケタ（掛け算も2ケタまで）
+    if (op === '+') { a = randInt(10, 99); b = randInt(10, 99); answer = a + b; }
+    else if (op === '-') { a = randInt(20, 99); b = randInt(10, a); answer = a - b; }
     else { a = randInt(10, 99); b = randInt(2, 9); answer = a * b; }
   } else if (currentDifficulty === 'normal') {
-    // ふつう: 4ケタ
-    if (op === '+') { a = randInt(1000, 9999); b = randInt(1000, 9999); answer = a + b; }
-    else if (op === '-') { a = randInt(1000, 9999); b = randInt(1000, a); answer = a - b; }
+    // Lv.3: 3ケタ（掛け算は2ケタまで）
+    if (op === '+') { a = randInt(100, 999); b = randInt(100, 999); answer = a + b; }
+    else if (op === '-') { a = randInt(200, 999); b = randInt(100, a); answer = a - b; }
     else {
-      if (Math.random() < 0.5) { a = randInt(100, 999); b = randInt(2, 9); }
-      else { a = randInt(10, 99); b = randInt(10, 99); }
+      if (Math.random() < 0.5) { a = randInt(10, 99); b = randInt(10, 99); }
+      else { a = randInt(10, 99); b = randInt(2, 9); }
       answer = a * b;
     }
   } else {
-    // むずかしい: 5ケタ以上
-    if (op === '+') { a = randInt(10000, 99999); b = randInt(10000, 99999); answer = a + b; }
-    else if (op === '-') { a = randInt(10000, 99999); b = randInt(10000, a); answer = a - b; }
+    // Lv.67: 4ケタ（掛け算は3ケタまで）
+    if (op === '+') { a = randInt(1000, 9999); b = randInt(1000, 9999); answer = a + b; }
+    else if (op === '-') { a = randInt(1000, 9999); b = randInt(1000, a); answer = a - b; }
     else {
       if (Math.random() < 0.5) { a = randInt(100, 999); b = randInt(10, 99); }
-      else { a = randInt(1000, 9999); b = randInt(2, 9); }
+      else { a = randInt(100, 999); b = randInt(2, 9); }
       answer = a * b;
     }
   }
@@ -2108,59 +2108,65 @@ function generateDecimalDivisionQuestion() {
   let text, answer;
 
   if (currentDifficulty === 'easy') {
-    // かんたん: 整数÷整数=小数 (割る数は2か5のみ)
+    // Lv.1: 2ケタ÷1ケタ = 小数（割る数は2か5）
     const divisor = pickFrom([2, 5]);
     if (divisor === 2) {
-      const q = pickFrom([0.5, 1.5, 2.5, 3.5]);
+      const q = pickFrom([0.5, 1.5, 2.5, 3.5, 4.5, 5.5]);
       const d = q * 2;
       text = `${d} ÷ 2`; answer = q;
     } else {
-      const q = pickFrom([0.2, 0.4, 0.6, 0.8, 1.2]);
+      const q = pickFrom([0.2, 0.4, 0.6, 0.8, 1.2, 1.4, 1.8]);
       const d = q * 5;
       text = `${d} ÷ 5`; answer = q;
     }
   } else if (currentDifficulty === 'normal') {
+    // Lv.3: 2ケタまでの割り算（被除数は3ケタ程度まで）
     if (pattern === 0) {
       const divisor = pickFrom([2, 4, 5, 8]);
       const qOpts = {
-        2: [0.5,1.5,2.5,3.5,4.5],
-        4: [0.25,0.75,1.25,1.75,2.25],
-        5: [0.2,0.4,0.6,0.8,1.2,1.4,1.6],
-        8: [0.125,0.375,0.625,0.875]
+        2: [0.5,1.5,2.5,3.5,4.5,5.5,6.5],
+        4: [0.25,0.75,1.25,1.75,2.25,2.75],
+        5: [0.2,0.4,0.6,0.8,1.2,1.4,1.6,1.8],
+        8: [0.125,0.375,0.625,0.875,1.125]
       };
       const q = pickFrom(qOpts[divisor]);
       const d = q * divisor;
       text = `${d} ÷ ${divisor}`; answer = q;
     } else if (pattern === 1) {
-      const divisor = randInt(2, 9);
-      const q = randInt(1, 20) / 10;
-      const d = Math.round(q * divisor * 10) / 10;
-      answer = Math.round((d / divisor) * 1000) / 1000;
+      // 2ケタ÷2ケタ
+      const divisor = randInt(11, 25);
+      const q = randInt(2, 9);
+      const d = divisor * q;
+      answer = q;
       text = `${d} ÷ ${divisor}`;
     } else {
-      const divisor = pickFrom([0.2, 0.4, 0.5, 0.8, 2.5]);
-      const aInt = randInt(2, 15);
+      // 小数÷1ケタ小数
+      const divisor = pickFrom([0.2, 0.4, 0.5]);
+      const aInt = randInt(2, 20);
       const d = Math.round(aInt * divisor * 10) / 10;
       answer = aInt;
       text = `${d} ÷ ${divisor}`;
     }
   } else {
-    // むずかしい: 小数÷小数、大きめの数
+    // Lv.67: 3ケタまでの割り算（被除数は4ケタ程度まで）
     if (pattern === 0) {
+      // 3ケタ÷2ケタ小数
       const divisor = pickFrom([0.3, 0.6, 0.7, 1.2, 1.5, 2.4]);
-      const aInt = randInt(3, 30);
+      const aInt = randInt(10, 99);
       const d = Math.round(aInt * divisor * 100) / 100;
       answer = aInt;
       text = `${d} ÷ ${divisor}`;
     } else if (pattern === 1) {
+      // 3ケタ÷3ケタ小数
       const divisor = pickFrom([0.25, 0.125, 0.05, 0.04]);
-      const aInt = randInt(2, 20);
+      const aInt = randInt(10, 99);
       const d = Math.round(aInt * divisor * 1000) / 1000;
       answer = aInt;
       text = `${d} ÷ ${divisor}`;
     } else {
-      const d = pickFrom([12.6, 15.4, 18.9, 24.8, 36.6, 45.5]);
-      const divisor = pickFrom([0.2, 0.3, 0.5, 0.7]);
+      // 4ケタ数÷小数
+      const d = pickFrom([120.6, 155.4, 189.0, 248.0, 366.0, 455.0, 512.4, 768.0]);
+      const divisor = pickFrom([0.2, 0.3, 0.4, 0.5, 0.6]);
       answer = Math.round((d / divisor) * 100) / 100;
       text = `${d} ÷ ${divisor}`;
     }
