@@ -1377,7 +1377,7 @@ body {
             <div class="playtime-banner-icon">🎮</div>
             <div class="playtime-banner-text">
               <div class="playtime-banner-title">ROBLOX PLAY TIME</div>
-              <div class="playtime-banner-desc">Lv.1:10問正解→1分 / Lv.3:8問正解→2分 / Lv.67:7問正解→3分</div>
+              <div class="playtime-banner-desc">Lv.1:10問正解→2分 / Lv.3:9問正解→3分 / Lv.67:8問正解→5分</div>
             </div>
           </div>
           <div class="playtime-banner-time">
@@ -1467,7 +1467,7 @@ body {
             <div class="diff-btn-text">
               <div class="diff-btn-title">レベル１</div>
               <div class="diff-btn-desc" id="diff-easy-desc">小さめの数でれんしゅう</div>
-              <div class="diff-btn-xp">+8 XP / 問 · 🎮 10問正解で1分GET</div>
+              <div class="diff-btn-xp">+8 XP / 問 · 🎮 10問正解で2分GET</div>
               <div class="diff-btn-cap" id="diff-easy-cap">今日のこり: 20分 / 20分</div>
             </div>
             <div class="diff-play-btn">▶</div>
@@ -1478,7 +1478,7 @@ body {
             <div class="diff-btn-text">
               <div class="diff-btn-title">レベル3</div>
               <div class="diff-btn-desc" id="diff-normal-desc">4ケタの計算にチャレンジ</div>
-              <div class="diff-btn-xp">+12 XP / 問 · 🎮 8問正解で2分GET</div>
+              <div class="diff-btn-xp">+12 XP / 問 · 🎮 9問正解で3分GET</div>
               <div class="diff-btn-cap" id="diff-normal-cap">今日のこり: 20分 / 20分</div>
             </div>
             <div class="diff-play-btn">▶</div>
@@ -1489,7 +1489,7 @@ body {
             <div class="diff-btn-text">
               <div class="diff-btn-title">レベル67</div>
               <div class="diff-btn-desc" id="diff-hard-desc">5ケタ以上の大きな計算</div>
-              <div class="diff-btn-xp">+18 XP / 問 · 🎮 7問正解で3分GET</div>
+              <div class="diff-btn-xp">+18 XP / 問 · 🎮 8問正解で5分GET</div>
               <div class="diff-btn-cap" id="diff-hard-cap">今日のこり: 20分 / 20分</div>
             </div>
             <div class="diff-play-btn">▶</div>
@@ -1954,7 +1954,7 @@ function startGame(difficulty) {
   document.getElementById('combo-indicator').classList.remove('show');
 
   // 難易度別の目標正解数
-  const goals = { easy: 10, normal: 8, hard: 7 };
+  const goals = { easy: 10, normal: 9, hard: 8 };
   session.requiredCorrect = goals[difficulty] || 10;
 
   // タグ表示
@@ -2359,7 +2359,7 @@ function showResult() {
   if (moneyRewardEl) moneyRewardEl.style.display = 'none';
 
   // 難易度別のご褒美分数
-  const rewardMinutes = { easy: 1, normal: 2, hard: 3 };
+  const rewardMinutes = { easy: 2, normal: 3, hard: 5 };
   const minutes = rewardMinutes[currentDifficulty];
 
   // 上限チェック付きでプレータイム加算
