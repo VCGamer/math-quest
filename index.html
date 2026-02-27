@@ -1205,6 +1205,149 @@ body {
   margin-top: 8px;
 }
 
+/* ===== 親モード（管理画面） ===== */
+.admin-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.85);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 400;
+  padding: 20px;
+}
+.admin-overlay.show { display: flex; }
+.admin-panel {
+  background: var(--rb-bg);
+  border: 2px solid var(--rb-border);
+  border-radius: 16px;
+  padding: 24px;
+  width: 100%;
+  max-width: 400px;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+.admin-title {
+  font-size: 1.1rem;
+  color: var(--rb-yellow);
+  text-align: center;
+  margin-bottom: 16px;
+  letter-spacing: 1px;
+}
+.admin-pin-row {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  margin-bottom: 16px;
+}
+.admin-pin-input {
+  width: 50px;
+  height: 56px;
+  text-align: center;
+  font-size: 1.5rem;
+  font-family: 'Bungee', sans-serif;
+  background: var(--rb-surface);
+  border: 2px solid var(--rb-border);
+  border-radius: 10px;
+  color: white;
+  outline: none;
+}
+.admin-pin-input:focus { border-color: var(--rb-yellow); }
+.admin-pin-error {
+  text-align: center;
+  color: var(--rb-red);
+  font-size: 0.75rem;
+  font-family: 'Noto Sans JP', sans-serif;
+  margin-bottom: 10px;
+  min-height: 1.2em;
+}
+.admin-section {
+  display: none;
+}
+.admin-section.show { display: block; }
+.admin-field {
+  background: var(--rb-card);
+  border-radius: 10px;
+  padding: 12px 16px;
+  margin-bottom: 10px;
+}
+.admin-field-label {
+  font-size: 0.65rem;
+  color: var(--rb-text-dim);
+  font-family: 'Noto Sans JP', sans-serif;
+  margin-bottom: 4px;
+}
+.admin-field-current {
+  font-size: 0.7rem;
+  color: var(--rb-text-dim);
+  font-family: 'Noto Sans JP', sans-serif;
+  margin-bottom: 6px;
+}
+.admin-field-input {
+  width: 100%;
+  padding: 8px 12px;
+  font-size: 1.1rem;
+  font-family: 'Bungee', sans-serif;
+  background: var(--rb-surface);
+  border: 2px solid var(--rb-border);
+  border-radius: 8px;
+  color: white;
+  outline: none;
+}
+.admin-field-input:focus { border-color: var(--rb-green); }
+.admin-btn-row {
+  display: flex;
+  gap: 10px;
+  margin-top: 16px;
+}
+.admin-btn-save {
+  flex: 1;
+  padding: 12px;
+  font-size: 0.85rem;
+  font-family: 'Bungee', sans-serif;
+  background: var(--rb-green);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  box-shadow: 0 3px 0 var(--rb-green-shadow);
+}
+.admin-btn-save:hover { filter: brightness(1.1); }
+.admin-btn-close {
+  flex: 1;
+  padding: 12px;
+  font-size: 0.85rem;
+  font-family: 'Bungee', sans-serif;
+  background: var(--rb-card);
+  color: var(--rb-text-dim);
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+}
+.admin-btn-close:hover { background: var(--rb-card-hover); }
+.admin-result {
+  text-align: center;
+  font-size: 0.75rem;
+  font-family: 'Noto Sans JP', sans-serif;
+  margin-top: 10px;
+  min-height: 1.2em;
+}
+.admin-trigger {
+  position: fixed;
+  bottom: 10px;
+  right: 10px;
+  width: 36px;
+  height: 36px;
+  background: transparent;
+  border: none;
+  color: rgba(255,255,255,0.08);
+  font-size: 1rem;
+  cursor: pointer;
+  z-index: 50;
+  border-radius: 50%;
+}
+.admin-trigger:hover { color: rgba(255,255,255,0.3); }
+
 /* ===== アニメーション ===== */
 @keyframes shake {
   0%, 100% { transform: translateX(0); }
@@ -1652,6 +1795,62 @@ body {
 
 <!-- パーティクル -->
 <div class="particle-container" id="particles"></div>
+
+<!-- 親モード (Admin) -->
+<div class="admin-overlay" id="admin-overlay">
+  <div class="admin-panel">
+    <div class="admin-title">🔒 PARENT MODE</div>
+    <!-- PIN入力 -->
+    <div id="admin-pin-section">
+      <div style="text-align:center; font-family:'Noto Sans JP',sans-serif; font-size:0.8rem; color:var(--rb-text-dim); margin-bottom:10px;">PINコードを入力</div>
+      <div class="admin-pin-row">
+        <input class="admin-pin-input" id="pin-1" type="tel" maxlength="1" inputmode="numeric">
+        <input class="admin-pin-input" id="pin-2" type="tel" maxlength="1" inputmode="numeric">
+        <input class="admin-pin-input" id="pin-3" type="tel" maxlength="1" inputmode="numeric">
+        <input class="admin-pin-input" id="pin-4" type="tel" maxlength="1" inputmode="numeric">
+      </div>
+      <div class="admin-pin-error" id="admin-pin-error"></div>
+      <div class="admin-btn-row">
+        <button class="admin-btn-close" onclick="closeAdmin()">CLOSE</button>
+      </div>
+    </div>
+    <!-- 編集セクション（PIN認証後に表示） -->
+    <div class="admin-section" id="admin-edit-section">
+      <div class="admin-field">
+        <div class="admin-field-label">⏰ 獲得プレータイム（分）</div>
+        <div class="admin-field-current" id="admin-cur-earned">現在: 0 分</div>
+        <input class="admin-field-input" id="admin-earned" type="number" step="1" inputmode="numeric">
+      </div>
+      <div class="admin-field">
+        <div class="admin-field-label">⏰ 使用済みプレータイム（分）</div>
+        <div class="admin-field-current" id="admin-cur-used">現在: 0 分</div>
+        <input class="admin-field-input" id="admin-used" type="number" step="1" inputmode="numeric">
+      </div>
+      <div class="admin-field">
+        <div class="admin-field-label">🎮 週末ボーナスプール（分）</div>
+        <div class="admin-field-current" id="admin-cur-weekend">現在: 0 分</div>
+        <input class="admin-field-input" id="admin-weekend" type="number" step="1" inputmode="numeric">
+      </div>
+      <div class="admin-field">
+        <div class="admin-field-label">💰 Roblox Money（US$）</div>
+        <div class="admin-field-current" id="admin-cur-robux">現在: $0</div>
+        <input class="admin-field-input" id="admin-robux" type="number" step="1" inputmode="numeric">
+      </div>
+      <div class="admin-field">
+        <div class="admin-field-label">🪙 コイン</div>
+        <div class="admin-field-current" id="admin-cur-coins">現在: 0</div>
+        <input class="admin-field-input" id="admin-coins" type="number" step="1" inputmode="numeric">
+      </div>
+      <div class="admin-btn-row">
+        <button class="admin-btn-save" onclick="saveAdminChanges()">SAVE</button>
+        <button class="admin-btn-close" onclick="closeAdmin()">CLOSE</button>
+      </div>
+      <div class="admin-result" id="admin-result"></div>
+    </div>
+  </div>
+</div>
+<!-- 親モードトリガー（右下の目立たないボタン） -->
+<button class="admin-trigger" id="admin-trigger" onclick="openAdmin()">⚙</button>
 
 <script>
 // =======================================================
@@ -2955,6 +3154,125 @@ function showTestResult() {
 // ===== テストモードの回答チェック =====
 // checkAnswer() を拡張するため、既存のnextQuestionをラップ
 const originalNextQuestion = nextQuestion;
+
+// ===== 親モード (Admin) =====
+const ADMIN_PIN = '0824';
+
+function openAdmin() {
+  const overlay = document.getElementById('admin-overlay');
+  overlay.classList.add('show');
+  // PIN入力リセット
+  document.getElementById('admin-pin-section').style.display = 'block';
+  document.getElementById('admin-edit-section').classList.remove('show');
+  document.getElementById('admin-pin-error').textContent = '';
+  document.getElementById('admin-result').textContent = '';
+  for (let i = 1; i <= 4; i++) {
+    document.getElementById('pin-' + i).value = '';
+  }
+  document.getElementById('pin-1').focus();
+}
+
+function closeAdmin() {
+  document.getElementById('admin-overlay').classList.remove('show');
+}
+
+// PIN入力: 自動フォーカス移動 & 自動認証
+document.querySelectorAll('.admin-pin-input').forEach((input, idx) => {
+  input.addEventListener('input', () => {
+    if (input.value.length === 1 && idx < 3) {
+      document.getElementById('pin-' + (idx + 2)).focus();
+    }
+    // 4桁揃ったら自動チェック
+    const pin = [1,2,3,4].map(i => document.getElementById('pin-' + i).value).join('');
+    if (pin.length === 4) {
+      checkAdminPin(pin);
+    }
+  });
+  input.addEventListener('keydown', (e) => {
+    if (e.key === 'Backspace' && input.value === '' && idx > 0) {
+      document.getElementById('pin-' + idx).focus();
+    }
+  });
+});
+
+function checkAdminPin(pin) {
+  if (pin === ADMIN_PIN) {
+    document.getElementById('admin-pin-section').style.display = 'none';
+    const editSection = document.getElementById('admin-edit-section');
+    editSection.classList.add('show');
+    // 現在の値をロード
+    loadAdminValues();
+  } else {
+    document.getElementById('admin-pin-error').textContent = 'PINが違います';
+    for (let i = 1; i <= 4; i++) {
+      document.getElementById('pin-' + i).value = '';
+    }
+    document.getElementById('pin-1').focus();
+  }
+}
+
+function loadAdminValues() {
+  const balance = save.playtimeEarned - save.playtimeUsed;
+  document.getElementById('admin-cur-earned').textContent = '現在: ' + save.playtimeEarned + ' 分（残高: ' + balance + ' 分）';
+  document.getElementById('admin-cur-used').textContent = '現在: ' + save.playtimeUsed + ' 分';
+  document.getElementById('admin-cur-weekend').textContent = '現在: ' + save.weekendBonusPool + ' 分';
+  document.getElementById('admin-cur-robux').textContent = '現在: $' + save.robuxMoney;
+  document.getElementById('admin-cur-coins').textContent = '現在: ' + save.totalCoins;
+  // 入力欄に現在値をセット
+  document.getElementById('admin-earned').value = save.playtimeEarned;
+  document.getElementById('admin-used').value = save.playtimeUsed;
+  document.getElementById('admin-weekend').value = save.weekendBonusPool;
+  document.getElementById('admin-robux').value = save.robuxMoney;
+  document.getElementById('admin-coins').value = save.totalCoins;
+}
+
+function saveAdminChanges() {
+  const newEarned = parseInt(document.getElementById('admin-earned').value) || 0;
+  const newUsed = parseInt(document.getElementById('admin-used').value) || 0;
+  const newWeekend = parseInt(document.getElementById('admin-weekend').value) || 0;
+  const newRobux = parseInt(document.getElementById('admin-robux').value) || 0;
+  const newCoins = parseInt(document.getElementById('admin-coins').value) || 0;
+
+  // 変更点をヒストリーに記録
+  const changes = [];
+  if (newEarned !== save.playtimeEarned) changes.push('獲得時間: ' + save.playtimeEarned + '→' + newEarned);
+  if (newUsed !== save.playtimeUsed) changes.push('使用時間: ' + save.playtimeUsed + '→' + newUsed);
+  if (newWeekend !== save.weekendBonusPool) changes.push('週末プール: ' + save.weekendBonusPool + '→' + newWeekend);
+  if (newRobux !== save.robuxMoney) changes.push('Robux$: ' + save.robuxMoney + '→' + newRobux);
+  if (newCoins !== save.totalCoins) changes.push('コイン: ' + save.totalCoins + '→' + newCoins);
+
+  if (changes.length === 0) {
+    document.getElementById('admin-result').textContent = '変更なし';
+    document.getElementById('admin-result').style.color = 'var(--rb-text-dim)';
+    return;
+  }
+
+  // セーブ更新
+  save.playtimeEarned = Math.max(0, newEarned);
+  save.playtimeUsed = Math.max(0, newUsed);
+  save.weekendBonusPool = Math.max(0, newWeekend);
+  save.robuxMoney = Math.max(0, newRobux);
+  save.totalCoins = Math.max(0, newCoins);
+
+  // 履歴に記録
+  save.history.push({
+    date: new Date().toLocaleString('ja-JP'),
+    type: 'admin-adjust',
+    detail: changes.join(', ')
+  });
+
+  writeSave();
+
+  // UI更新
+  updatePlaytimeDisplay();
+  document.getElementById('xp-coins').textContent = save.totalCoins;
+  document.getElementById('robux-badge').textContent = '$' + save.robuxMoney;
+
+  // 表示を更新
+  loadAdminValues();
+  document.getElementById('admin-result').textContent = '✅ 保存しました！';
+  document.getElementById('admin-result').style.color = 'var(--rb-green)';
+}
 
 // ===== Service Worker登録（PWA/オフライン対応） =====
 if ('serviceWorker' in navigator) {
