@@ -2047,6 +2047,7 @@ function startGame(difficulty) {
   session.sessionXP = 0;
   session.sessionCoins = 0;
   session.totalAnswerTime = 0;
+  session.resultShown = false;
   document.getElementById('streak').textContent = '0';
   document.getElementById('combo-indicator').classList.remove('show');
 
@@ -2180,9 +2181,12 @@ function generateDecimalDivisionQuestion() {
 
 // ===== 次の問題 =====
 function nextQuestion() {
-  // 目標正解数に達したらクリア！
+  // 目標正解数に達したらクリア！（重複呼び出し防止）
   if (session.correctCount >= session.requiredCorrect) {
-    showResult();
+    if (!session.resultShown) {
+      session.resultShown = true;
+      showResult();
+    }
     return;
   }
 
@@ -2233,6 +2237,10 @@ function nextQuestion() {
 
 // ===== 回答チェック =====
 function checkAnswer() {
+  // 二重実行ガード: ボタンが無効なら既に処理済み
+  const submitBtn = document.getElementById('submit-btn');
+  if (submitBtn.disabled) return;
+
   const input = document.getElementById('answer-input');
   const userAnswer = parseFloat(input.value);
 
@@ -2245,7 +2253,7 @@ function checkAnswer() {
   // ストップウォッチ停止
   clearInterval(session.timerInterval);
   const answerTime = (Date.now() - session.questionStartTime) / 1000;
-  document.getElementById('submit-btn').disabled = true;
+  submitBtn.disabled = true;
 
   // 回答時間を記録（正解・不正解問わず）
   save.answerTimes.push(Math.round(answerTime * 10) / 10);
@@ -2759,6 +2767,7 @@ function startTestMode() {
   session.sessionXP = 0;
   session.sessionCoins = 0;
   session.totalAnswerTime = 0;
+  session.resultShown = false;
   session.requiredCorrect = TEST_TOTAL_QUESTIONS; // 20問全部出す
   document.getElementById('streak').textContent = '0';
   document.getElementById('combo-indicator').classList.remove('show');
@@ -2771,9 +2780,12 @@ function startTestMode() {
 }
 
 function nextTestQuestion() {
-  // 20問出し切ったらリザルト
+  // 20問出し切ったらリザルト（重複呼び出し防止）
   if (session.currentQuestion >= TEST_TOTAL_QUESTIONS) {
-    showTestResult();
+    if (!session.resultShown) {
+      session.resultShown = true;
+      showTestResult();
+    }
     return;
   }
 
