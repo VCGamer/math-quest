@@ -1836,6 +1836,11 @@ body {
         <div class="admin-field-current" id="admin-cur-robux">現在: 0 MR ($0)</div>
         <input class="admin-field-input" id="admin-robux" type="number" step="1" inputmode="numeric">
       </div>
+      <div class="admin-field">
+        <div class="admin-field-label">🔥 Daily Streak（連続日数）</div>
+        <div class="admin-field-current" id="admin-cur-streak">現在: 0 日</div>
+        <input class="admin-field-input" id="admin-streak" type="number" step="1" min="0" max="7" inputmode="numeric" placeholder="0〜7">
+      </div>
       <div class="admin-field" style="display:none;">
         <div class="admin-field-label">🪙 コイン</div>
         <div class="admin-field-current" id="admin-cur-coins">現在: 0</div>
@@ -3228,12 +3233,15 @@ function loadAdminValues() {
   document.getElementById('admin-cur-weekend').textContent = '現在: ' + save.weekendBonusPool + ' 分';
   document.getElementById('admin-cur-robux').textContent = '現在: ' + save.robuxMoney + ' MR ($' + miniToUSD(save.robuxMoney) + ')';
   document.getElementById('admin-cur-coins').textContent = '現在: ' + save.totalCoins;
+  const streakCount = getConsecutiveDays();
+  document.getElementById('admin-cur-streak').textContent = '現在: ' + streakCount + ' 日（' + save.streakDays.slice(-7).join(', ') + '）';
   // 入力欄に現在値をセット
   document.getElementById('admin-earned').value = save.playtimeEarned;
   document.getElementById('admin-used').value = save.playtimeUsed;
   document.getElementById('admin-weekend').value = save.weekendBonusPool;
   document.getElementById('admin-robux').value = save.robuxMoney;
   document.getElementById('admin-coins').value = save.totalCoins;
+  document.getElementById('admin-streak').value = streakCount;
 }
 
 function saveAdminChanges() {
@@ -3242,6 +3250,8 @@ function saveAdminChanges() {
   const newWeekend = parseInt(document.getElementById('admin-weekend').value) || 0;
   const newRobux = parseInt(document.getElementById('admin-robux').value) || 0;
   const newCoins = parseInt(document.getElementById('admin-coins').value) || 0;
+  const newStreak = Math.min(7, Math.max(0, parseInt(document.getElementById('admin-streak').value) || 0));
+  const currentStreak = getConsecutiveDays();
 
   // 変更点をヒストリーに記録
   const changes = [];
@@ -3250,6 +3260,7 @@ function saveAdminChanges() {
   if (newWeekend !== save.weekendBonusPool) changes.push('週末プール: ' + save.weekendBonusPool + '→' + newWeekend);
   if (newRobux !== save.robuxMoney) changes.push('MiniRobux: ' + save.robuxMoney + '→' + newRobux);
   if (newCoins !== save.totalCoins) changes.push('コイン: ' + save.totalCoins + '→' + newCoins);
+  if (newStreak !== currentStreak) changes.push('ストリーク: ' + currentStreak + '→' + newStreak);
 
   if (changes.length === 0) {
     document.getElementById('admin-result').textContent = '変更なし';
@@ -3264,6 +3275,22 @@ function saveAdminChanges() {
   save.robuxMoney = Math.max(0, newRobux);
   save.totalCoins = Math.max(0, newCoins);
 
+  // ストリーク更新：指定日数分の連続日を今日から逆算して生成
+  if (newStreak !== currentStreak) {
+    const days = [];
+    const today = new Date();
+    for (let i = newStreak - 1; i >= 0; i--) {
+      const d = new Date(today);
+      d.setDate(d.getDate() - i);
+      days.push(d.toISOString().split('T')[0]);
+    }
+    save.streakDays = days;
+    // 7日連続でテストモードアンロック
+    if (newStreak >= 7) {
+      save.testModeUnlocked = true;
+    }
+  }
+
   // 履歴に記録
   save.history.push({
     date: new Date().toLocaleString('ja-JP'),
@@ -3277,6 +3304,7 @@ function saveAdminChanges() {
   updatePlaytimeDisplay();
   document.getElementById('robux').textContent = save.totalCoins;
   updateRobuxMoneyDisplay();
+  updateStreakUI();
 
   // 表示を更新
   loadAdminValues();

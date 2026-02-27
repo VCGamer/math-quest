@@ -1,5 +1,5 @@
 // Service Worker for MATH QUEST PWA
-const CACHE_NAME = 'mathquest-v7';
+const CACHE_NAME = 'mathquest-v8';
 const ASSETS = [
   './',
   './index.html',
