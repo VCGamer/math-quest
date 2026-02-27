@@ -3265,8 +3265,8 @@ function saveAdminChanges() {
 
   // UI更新
   updatePlaytimeDisplay();
-  document.getElementById('xp-coins').textContent = save.totalCoins;
-  document.getElementById('robux-badge').textContent = '$' + save.robuxMoney;
+  document.getElementById('robux').textContent = save.totalCoins;
+  document.getElementById('robux-money-display').textContent = '$' + save.robuxMoney;
 
   // 表示を更新
   loadAdminValues();
