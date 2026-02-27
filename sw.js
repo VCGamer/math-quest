@@ -1,5 +1,5 @@
 // Service Worker for MATH QUEST PWA
-const CACHE_NAME = 'mathquest-v3';
+const CACHE_NAME = 'mathquest-v4';
 const ASSETS = [
   './',
   './index.html',
@@ -27,21 +27,20 @@ self.addEventListener('activate', event => {
   self.clients.claim();
 });
 
-// フェッチ: キャッシュ優先、なければネットワーク
+// フェッチ: ネットワーク優先、オフライン時はキャッシュ
 self.addEventListener('fetch', event => {
   event.respondWith(
-    caches.match(event.request).then(cached => {
-      if (cached) return cached;
-      return fetch(event.request).then(response => {
-        // フォントなど外部リソースもキャッシュ
-        if (response.ok && event.request.url.startsWith('http')) {
-          const clone = response.clone();
-          caches.open(CACHE_NAME).then(cache => cache.put(event.request, clone));
-        }
-        return response;
-      }).catch(() => {
-        // オフラインでキャッシュもない場合
-        return new Response('オフラインです', { status: 503 });
+    fetch(event.request).then(response => {
+      // 成功したらキャッシュを更新
+      if (response.ok && event.request.url.startsWith('http')) {
+        const clone = response.clone();
+        caches.open(CACHE_NAME).then(cache => cache.put(event.request, clone));
+      }
+      return response;
+    }).catch(() => {
+      // オフライン → キャッシュから返す
+      return caches.match(event.request).then(cached => {
+        return cached || new Response('オフラインです', { status: 503 });
       });
     })
   );
