@@ -1588,9 +1588,9 @@ body {
             </div>
             <div class="test-mode-tile-desc">
               20問のミックステスト（大きな数＋小数わり算、全レベルランダム）<br>
-              80%以上正解で <b style="color:var(--rb-yellow)">US$1 Roblox Money</b> をゲット！
+              80%以上正解で <b style="color:var(--rb-yellow)">500 MR (US$5)</b> をゲット！
             </div>
-            <div class="test-mode-tile-reward">💰 報酬: 80%以上正解（16問以上） → US$1</div>
+            <div class="test-mode-tile-reward">💰 報酬: 80%以上正解（16問以上） → 500 MR (US$5)</div>
             <div class="test-mode-tile-lock" id="test-mode-lock-msg">🔒 7日れんぞくで問題を解くとアンロック！</div>
           </div>
         </div>
@@ -1832,8 +1832,8 @@ body {
         <input class="admin-field-input" id="admin-weekend" type="number" step="1" inputmode="numeric">
       </div>
       <div class="admin-field">
-        <div class="admin-field-label">💰 Roblox Money（US$）</div>
-        <div class="admin-field-current" id="admin-cur-robux">現在: $0</div>
+        <div class="admin-field-label">💰 Mini Robux Money（100MR = US$1）</div>
+        <div class="admin-field-current" id="admin-cur-robux">現在: 0 MR ($0)</div>
         <input class="admin-field-input" id="admin-robux" type="number" step="1" inputmode="numeric">
       </div>
       <div class="admin-field">
@@ -1919,6 +1919,12 @@ if (!save.streakDays) {
 if (!('weekendBonusPool' in save)) {
   save.weekendBonusPool = 0;
   save.weekendId = null;
+  writeSave();
+}
+// Mini Robuxマイグレーション（US$ → Mini Robux: ×100）
+if (!save.miniRobuxMigrated) {
+  save.robuxMoney = (save.robuxMoney || 0) * 100;
+  save.miniRobuxMigrated = true;
   writeSave();
 }
 
@@ -2146,7 +2152,8 @@ function initUI() {
 }
 
 function updateRobuxMoneyDisplay() {
-  document.getElementById('robux-money-display').textContent = `$${save.robuxMoney}`;
+  document.getElementById('robux-money-display').textContent =
+    `${save.robuxMoney}MR ($${miniToUSD(save.robuxMoney)})`;
 }
 
 initUI();
@@ -2947,7 +2954,10 @@ function pickFrom(arr) {
 let isTestMode = false;
 const TEST_TOTAL_QUESTIONS = 20;
 const TEST_PASS_RATE = 0.8; // 80%
-const TEST_REWARD_DOLLARS = 1;
+const TEST_REWARD_MINI = 500; // 500 Mini Robux = US$5
+function miniToUSD(mini) {
+  return (mini / 100).toFixed(mini % 100 === 0 ? 0 : 2);
+}
 
 function startTestMode() {
   if (!save.testModeUnlocked) {
@@ -3077,9 +3087,9 @@ function showTestResult() {
   // グレード
   let grade, title, subtitle;
   if (passed) {
-    if (rate >= 0.95) { grade = '🏆'; title = 'PERFECT!'; subtitle = '天才！US$1 GET！'; }
-    else if (rate >= 0.9) { grade = '⭐'; title = 'EXCELLENT!'; subtitle = 'すばらしい！US$1 GET！'; }
-    else { grade = '💰'; title = 'PASSED!'; subtitle = '合格！US$1 GET！'; }
+    if (rate >= 0.95) { grade = '🏆'; title = 'PERFECT!'; subtitle = '天才！US$5 GET！'; }
+    else if (rate >= 0.9) { grade = '⭐'; title = 'EXCELLENT!'; subtitle = 'すばらしい！US$5 GET！'; }
+    else { grade = '💰'; title = 'PASSED!'; subtitle = '合格！US$5 GET！'; }
   } else {
     grade = '💪'; title = 'NOT YET...'; subtitle = 'もうすこし！80%をめざそう！';
   }
@@ -3104,12 +3114,12 @@ function showTestResult() {
   }
 
   if (passed) {
-    save.robuxMoney += TEST_REWARD_DOLLARS;
+    save.robuxMoney += TEST_REWARD_MINI;
     save.history.unshift({
       date: new Date().toISOString(),
       type: 'test-pass',
       minutes: 0,
-      dollars: TEST_REWARD_DOLLARS,
+      miniRobux: TEST_REWARD_MINI,
       correct: session.correctCount,
       total: TEST_TOTAL_QUESTIONS,
     });
@@ -3119,8 +3129,8 @@ function showTestResult() {
     moneyRewardEl.style.display = 'block';
     moneyRewardEl.innerHTML = `
       <div class="money-reward-title">💰 ROBLOX MONEY GET!</div>
-      <div class="money-reward-amount">+US$${TEST_REWARD_DOLLARS}</div>
-      <div class="money-reward-total">トータル: <b>US$${save.robuxMoney}</b></div>
+      <div class="money-reward-amount">+${TEST_REWARD_MINI} MR (US$${miniToUSD(TEST_REWARD_MINI)})</div>
+      <div class="money-reward-total">トータル: <b>${save.robuxMoney} MR (US$${miniToUSD(save.robuxMoney)})</b></div>
     `;
   } else {
     const needed = Math.ceil(TEST_TOTAL_QUESTIONS * TEST_PASS_RATE);
@@ -3138,8 +3148,8 @@ function showTestResult() {
     moneyRewardEl.style.display = 'block';
     moneyRewardEl.innerHTML = `
       <div class="money-reward-title" style="color:#ff6b6b;">😢 あと${diff}問足りなかった...</div>
-      <div class="money-reward-amount" style="color:var(--rb-text-dim); font-size:1.5rem;">US$0</div>
-      <div class="money-reward-total">${needed}問以上正解（80%）で US$1 GET！<br>がんばってもう一回チャレンジしよう！</div>
+      <div class="money-reward-amount" style="color:var(--rb-text-dim); font-size:1.5rem;">0 MR</div>
+      <div class="money-reward-total">${needed}問以上正解（80%）で US$${miniToUSD(TEST_REWARD_MINI)} GET！<br>がんばってもう一回チャレンジしよう！</div>
     `;
   }
 
@@ -3216,7 +3226,7 @@ function loadAdminValues() {
   document.getElementById('admin-cur-earned').textContent = '現在: ' + save.playtimeEarned + ' 分（残高: ' + balance + ' 分）';
   document.getElementById('admin-cur-used').textContent = '現在: ' + save.playtimeUsed + ' 分';
   document.getElementById('admin-cur-weekend').textContent = '現在: ' + save.weekendBonusPool + ' 分';
-  document.getElementById('admin-cur-robux').textContent = '現在: $' + save.robuxMoney;
+  document.getElementById('admin-cur-robux').textContent = '現在: ' + save.robuxMoney + ' MR ($' + miniToUSD(save.robuxMoney) + ')';
   document.getElementById('admin-cur-coins').textContent = '現在: ' + save.totalCoins;
   // 入力欄に現在値をセット
   document.getElementById('admin-earned').value = save.playtimeEarned;
@@ -3238,7 +3248,7 @@ function saveAdminChanges() {
   if (newEarned !== save.playtimeEarned) changes.push('獲得時間: ' + save.playtimeEarned + '→' + newEarned);
   if (newUsed !== save.playtimeUsed) changes.push('使用時間: ' + save.playtimeUsed + '→' + newUsed);
   if (newWeekend !== save.weekendBonusPool) changes.push('週末プール: ' + save.weekendBonusPool + '→' + newWeekend);
-  if (newRobux !== save.robuxMoney) changes.push('Robux$: ' + save.robuxMoney + '→' + newRobux);
+  if (newRobux !== save.robuxMoney) changes.push('MiniRobux: ' + save.robuxMoney + '→' + newRobux);
   if (newCoins !== save.totalCoins) changes.push('コイン: ' + save.totalCoins + '→' + newCoins);
 
   if (changes.length === 0) {
@@ -3266,7 +3276,7 @@ function saveAdminChanges() {
   // UI更新
   updatePlaytimeDisplay();
   document.getElementById('robux').textContent = save.totalCoins;
-  document.getElementById('robux-money-display').textContent = '$' + save.robuxMoney;
+  updateRobuxMoneyDisplay();
 
   // 表示を更新
   loadAdminValues();
