@@ -1097,6 +1097,66 @@ body {
   font-family: 'Noto Sans JP', sans-serif;
 }
 
+/* ===== Lv.5 ろんりパズル ===== */
+.tile-thumb-logic {
+  background: linear-gradient(135deg, #5c1a8a, #3a0f5c);
+}
+.question-text.logic-mode {
+  font-size: 1rem !important;
+  letter-spacing: normal !important;
+  text-align: left;
+  line-height: 1.8;
+  font-family: 'Noto Sans JP', sans-serif;
+  padding: 0 8px;
+}
+.question-text.logic-mode table {
+  border-collapse: collapse;
+  margin: 8px auto;
+  font-size: 0.85rem;
+}
+.question-text.logic-mode th,
+.question-text.logic-mode td {
+  border: 1px solid var(--rb-border);
+  padding: 4px 10px;
+  text-align: center;
+}
+.question-text.logic-mode th {
+  background: var(--rb-surface);
+}
+.help-buttons {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  margin-top: 12px;
+  flex-wrap: wrap;
+}
+.help-btn {
+  padding: 10px 24px;
+  font-size: 0.85rem;
+  font-family: 'Bungee', sans-serif;
+  background: linear-gradient(135deg, #d4a017, #b38600);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  box-shadow: 0 3px 0 #8a6800;
+  animation: popIn 0.3s ease;
+}
+.really-help-btn {
+  padding: 10px 24px;
+  font-size: 0.85rem;
+  font-family: 'Bungee', sans-serif;
+  background: linear-gradient(135deg, #e74c3c, #c0392b);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  box-shadow: 0 3px 0 #962d22;
+  animation: popIn 0.3s ease;
+}
+.help-btn:hover, .really-help-btn:hover { filter: brightness(1.15); }
+.help-btn:disabled, .really-help-btn:disabled { opacity: 0.7; cursor: default; }
+
 /* ===== テストモードタイル ===== */
 .test-mode-section {
   margin-top: 20px;
@@ -1520,7 +1580,7 @@ body {
             <div class="playtime-banner-icon">🎮</div>
             <div class="playtime-banner-text">
               <div class="playtime-banner-title">ROBLOX PLAY TIME</div>
-              <div class="playtime-banner-desc">Lv.1:10問正解→2分 / Lv.3:9問正解→3分 / Lv.67:8問正解→5分</div>
+              <div class="playtime-banner-desc">Lv.1:10問正解→2分 / Lv.3:9問正解→3分 / Lv.5:1問正解→5分</div>
             </div>
           </div>
           <div class="playtime-banner-time">
@@ -1571,6 +1631,18 @@ body {
             <div class="tile-info">
               <div class="tile-title">小数のわり算</div>
               <div class="tile-desc">小数点がある わり算の問題にチャレンジ！</div>
+            </div>
+          </div>
+
+          <div class="game-tile" onclick="startLogicPuzzle()">
+            <div class="tile-thumbnail tile-thumb-logic">
+              <span>🧩</span>
+              <div class="tile-badge">🆕 NEW</div>
+              <div class="tile-players">👤 Brain Mode</div>
+            </div>
+            <div class="tile-info">
+              <div class="tile-title">Lv.5 ろんりパズル</div>
+              <div class="tile-desc">1もん正解で5分GET！ 頭をつかうパズルにチャレンジ！</div>
             </div>
           </div>
         </div>
@@ -1631,7 +1703,7 @@ body {
           <div class="diff-btn diff-hard" id="diff-btn-hard" onclick="startGame('hard')">
             <div class="diff-btn-icon">🔥</div>
             <div class="diff-btn-text">
-              <div class="diff-btn-title">レベル67</div>
+              <div class="diff-btn-title">レベル5</div>
               <div class="diff-btn-desc" id="diff-hard-desc">5ケタ以上の大きな計算</div>
               <div class="diff-btn-xp" id="diff-hard-xp">+18 XP / 問 · 🎮 8問正解で5分GET</div>
               <div class="diff-btn-cap" id="diff-hard-cap">今日のこり: 20分 / 20分</div>
@@ -1662,6 +1734,10 @@ body {
                  placeholder="?" autocomplete="off">
           <br>
           <button class="submit-btn" id="submit-btn" onclick="checkAnswer()">CHECK!</button>
+          <div class="help-buttons" id="help-buttons" style="display:none;">
+            <button class="help-btn" id="help-btn" onclick="showHint1()" style="display:none;">🆘 HELP</button>
+            <button class="really-help-btn" id="really-help-btn" onclick="showHint2()" style="display:none;">🆘🆘 REALLY HELP</button>
+          </div>
         </div>
         <div class="feedback" id="feedback"></div>
       </div>
@@ -1932,6 +2008,155 @@ if (!save.miniRobuxMigrated) {
   save.miniRobuxMigrated = true;
   writeSave();
 }
+// ろんりパズルマイグレーション
+if (!('lastLogicPuzzleId' in save)) {
+  save.lastLogicPuzzleId = null;
+  writeSave();
+}
+
+// ===== Lv.5 ろんりパズル問題バンク =====
+const LOGIC_PUZZLES = [
+  // --- 変換記号タイプ ---
+  {
+    id: 'sym-1', type: 'symbol', typeLabel: '🔄 変換記号',
+    questionHTML: '<p>きまり: ☆→あ、♡→い、△→う、□→え、○→お</p><p>では 「○☆□♡△」を ひらがなに なおすと？</p>',
+    answer: ['おあえいう'], answerMode: 'exact',
+    hint1: '左から1つずつ きまりに あてはめてみよう',
+    hint2: '○→お、☆→あ、□→え、♡→い、△→う'
+  },
+  {
+    id: 'sym-2', type: 'symbol', typeLabel: '🔄 変換記号',
+    questionHTML: '<p>きまり: A→1、B→2、C→3、D→4、E→5</p><p>「BEAD」を数字にすると？（4ケタの数字で答えてね）</p>',
+    answer: ['2514'], answerMode: 'exact',
+    hint1: 'Bは2、Eは5… と じゅんばんに おきかえよう',
+    hint2: 'B→2、E→5、A→1、D→4'
+  },
+  {
+    id: 'sym-3', type: 'symbol', typeLabel: '🔄 変換記号',
+    questionHTML: '<p>きまり: ●→あ、■→い、▲→う、★→え、◆→お</p><p>「えおあいう」を記号にもどすと、3番目の記号は？（●■▲★◆から選んで）</p>',
+    answer: ['●'], answerMode: 'exact',
+    hint1: '「えおあいう」の3番目の文字は「あ」だよ',
+    hint2: '「あ」に対応する記号は●'
+  },
+  // --- 数字ロジックタイプ ---
+  {
+    id: 'num-1', type: 'number-logic', typeLabel: '🔢 すいりパズル',
+    questionHTML: '<p>ある数に 3 を たしてから 2 をかけると 16 になりました。</p><p>ある数は いくつ？</p>',
+    answer: ['5'], answerMode: 'numeric',
+    hint1: 'さいごの答え 16 から ぎゃくに もどしてみよう',
+    hint2: '16 ÷ 2 = 8、8 − 3 = ?'
+  },
+  {
+    id: 'num-2', type: 'number-logic', typeLabel: '🔢 すいりパズル',
+    questionHTML: '<p>1から100までの整数のうち、「7」がふくまれる数は ぜんぶで いくつ ある？</p><p>（例: 7, 17, 27, 37, 47, 57, 67, 70, 71, ...）</p>',
+    answer: ['19'], answerMode: 'numeric',
+    hint1: '一の位が7の数と、十の位が7の数を べつべつに数えよう',
+    hint2: '一の位が7: 7,17,27,37,47,57,67,77,87,97 = 10こ。十の位が7: 70〜79 = 10こ。でも77はかぶるから？'
+  },
+  {
+    id: 'num-3', type: 'number-logic', typeLabel: '🔢 すいりパズル',
+    questionHTML: '<p>ある数を 5 でわると 3 あまり、7 でわると 5 あまります。</p><p>いちばん小さい そのような数は？</p>',
+    answer: ['33'], answerMode: 'numeric',
+    hint1: '5でわって3あまる数: 3, 8, 13, 18, 23, 28, 33, 38... をリストアップしよう',
+    hint2: '7でわって5あまる数: 5, 12, 19, 26, 33, 40... 両方にある数は？'
+  },
+  {
+    id: 'num-4', type: 'number-logic', typeLabel: '🔢 すいりパズル',
+    questionHTML: '<p>3人の子どもが おかしを分けます。</p><p>Aは Bより 2こ 多く、Bは Cより 3こ 多くもらいました。</p><p>3人のおかしの合計は 21こ です。Aは何こ もらった？</p>',
+    answer: ['10'], answerMode: 'numeric',
+    hint1: 'Cの個数を □ とすると、B = □+3、A = □+5 だよ',
+    hint2: '□ + (□+3) + (□+5) = 21 → 3×□ + 8 = 21 → □ = ?'
+  },
+  // --- 数列パターン ---
+  {
+    id: 'seq-1', type: 'sequence', typeLabel: '🔍 数のきまり',
+    questionHTML: '<p>つぎの数のならびの きまりを みつけて、？に入る数を答えよう。</p><p style="font-size:1.4rem; text-align:center; margin:16px 0;">2, 6, 18, 54, <b>？</b></p>',
+    answer: ['162'], answerMode: 'numeric',
+    hint1: 'となりの数 同士を くらべてみよう（わり算してみて）',
+    hint2: '6÷2=3、18÷6=3、54÷18=3 … 毎回3をかけているよ！'
+  },
+  {
+    id: 'seq-2', type: 'sequence', typeLabel: '🔍 数のきまり',
+    questionHTML: '<p>つぎの数のならびの きまりを みつけて、？に入る数を答えよう。</p><p style="font-size:1.4rem; text-align:center; margin:16px 0;">1, 1, 2, 3, 5, 8, 13, <b>？</b></p>',
+    answer: ['21'], answerMode: 'numeric',
+    hint1: 'となりあう 2つの数を たしてみよう',
+    hint2: '1+1=2、1+2=3、2+3=5、3+5=8、5+8=13、8+13=？'
+  },
+  {
+    id: 'seq-3', type: 'sequence', typeLabel: '🔍 数のきまり',
+    questionHTML: '<p>つぎの数のならびの きまりを みつけて、？に入る数を答えよう。</p><p style="font-size:1.4rem; text-align:center; margin:16px 0;">1, 4, 9, 16, 25, <b>？</b></p>',
+    answer: ['36'], answerMode: 'numeric',
+    hint1: 'それぞれの数は なにかの「2乗」（同じ数を2回かけた数）だよ',
+    hint2: '1×1=1、2×2=4、3×3=9、4×4=16、5×5=25、6×6=？'
+  },
+  // --- 図形・かぞえタイプ ---
+  {
+    id: 'geo-1', type: 'geometry', typeLabel: '📐 かぞえよう',
+    questionHTML: '<p>正方形の中に たいかくせんを 2本ひくと、三角形はいくつ できる？</p><p style="text-align:center; font-size:2rem; margin:12px 0;">◇</p><p style="text-align:center; font-size:0.8rem; color:#aaa;">（正方形に ×の線が入ったイメージ）</p>',
+    answer: ['4'], answerMode: 'numeric',
+    hint1: '対角線で 正方形が いくつの部分に わかれる？',
+    hint2: '対角線2本で 4つの三角形に わかれるよ'
+  },
+  {
+    id: 'geo-2', type: 'geometry', typeLabel: '📐 かぞえよう',
+    questionHTML: '<p>下の図で、三角形は ぜんぶで いくつ ある？</p><pre style="font-size:1.2rem; text-align:center; line-height:1.5; letter-spacing:2px;">    /\\\n   /  \\\n  /----\\\n /  /\\  \\\n/  /  \\  \\\n/--/----\\--\\</pre><p style="font-size:0.8rem; color:#aaa; text-align:center;">大きな三角の中に 小さな三角があるよ</p>',
+    answer: ['5'], answerMode: 'numeric',
+    hint1: '小さい三角形と、2つ以上で できる大きい三角形を わけて かぞえよう',
+    hint2: '小さい三角: 上1つ + 下左1つ + 下右1つ = 3。中くらい: 下半分の大きい三角1つ。全体: 1つ。合計5つ'
+  },
+  // --- ロジックグリッド ---
+  {
+    id: 'logic-1', type: 'logic-grid', typeLabel: '💡 ロジック',
+    questionHTML: '<p>A, B, C の3人が テストを うけました。</p><ul style="margin:8px 0;"><li>Aの点数は Bより 高い</li><li>Cの点数は Aより 高い</li><li>Bの点数は 70点</li><li>3人の平均は 80点</li></ul><p>Cの点数は？</p>',
+    answer: ['90'], answerMode: 'numeric',
+    hint1: '3人の合計は 80×3 = 240点。B=70 だから A+C = ?',
+    hint2: 'A+C = 170。C > A > B=70 なので Aは71以上。でも平均からCの値は1つに決まる…実は A=80, C=90'
+  },
+  {
+    id: 'logic-2', type: 'logic-grid', typeLabel: '💡 ロジック',
+    questionHTML: '<p>4つの箱に 1〜4の数字が 1つずつ入っています。</p><ul style="margin:8px 0;"><li>1番目の箱は 偶数</li><li>2番目の箱は 1番目より大きい</li><li>4番目の箱は 1</li></ul><p>3番目の箱の数字は？</p>',
+    answer: ['3'], answerMode: 'numeric',
+    hint1: '4番目=1。1番目は偶数だから 2 か 4',
+    hint2: '1番目=2なら2番目は3か4。残りで3番目を決めよう。1番目=4なら2番目はそれより大きい数がない！'
+  },
+  {
+    id: 'logic-3', type: 'logic-grid', typeLabel: '💡 ロジック',
+    questionHTML: '<p>5人が一列にならんでいます。</p><ul style="margin:8px 0;"><li>Aは いちばん前ではない</li><li>Bは Aのすぐうしろ</li><li>Cは いちばんうしろ</li><li>Dは いちばん前</li></ul><p>Aは 前から何番目？</p>',
+    answer: ['2'], answerMode: 'numeric',
+    hint1: 'D が1番目、C が5番目。B は Aのすぐうしろ だよ',
+    hint2: 'Aは1番目以外。D=1番目のあと、A=2番目 なら B=3番目 で うまくいく！'
+  },
+  // --- 魔方陣タイプ ---
+  {
+    id: 'magic-1', type: 'magic-square', typeLabel: '🔮 魔方陣',
+    questionHTML: '<p>下の3×3のますに 1〜9を入れて、たて・よこ・ななめ の合計を すべて同じにします。</p><table><tr><th>2</th><th>？</th><th>6</th></tr><tr><th>9</th><th>5</th><th>1</th></tr><tr><th>4</th><th>3</th><th>8</th></tr></table><p>？に入る数は？</p>',
+    answer: ['7'], answerMode: 'numeric',
+    hint1: '1行目の合計は 他の行と同じになるはず。2行目は 9+5+1=15',
+    hint2: '合計は15。1行目: 2+？+6=15 → ？=？'
+  },
+  {
+    id: 'magic-2', type: 'magic-square', typeLabel: '🔮 魔方陣',
+    questionHTML: '<p>下のますの ？に入る数を答えよう。（たて・よこの合計が すべて同じ）</p><table><tr><th>8</th><th>1</th><th>？</th></tr><tr><th>3</th><th>5</th><th>7</th></tr><tr><th>4</th><th>9</th><th>2</th></tr></table>',
+    answer: ['6'], answerMode: 'numeric',
+    hint1: '2行目の合計は 3+5+7=15。1行目も15になるはず',
+    hint2: '8+1+？=15 → ？=6'
+  },
+  // --- あまり・倍数ロジック ---
+  {
+    id: 'div-1', type: 'number-logic', typeLabel: '🔢 すいりパズル',
+    questionHTML: '<p>ある数は 3でわっても 4でわっても 2あまります。</p><p>50より小さくて いちばん大きい そのような数は？</p>',
+    answer: ['38'], answerMode: 'numeric',
+    hint1: 'その数から2をひくと、3でも4でもわりきれる数になるよ',
+    hint2: '3と4の公倍数は 12, 24, 36, 48… それに2をたすと 14, 26, 38, 50。50より小さいのは？'
+  },
+  {
+    id: 'age-1', type: 'number-logic', typeLabel: '🔢 すいりパズル',
+    questionHTML: '<p>お父さんの 年れいは 子どもの 年れいの 4倍です。</p><p>5年後には お父さんの 年れいは 子どもの 3倍に なります。</p><p>今の子どもの 年れいは？</p>',
+    answer: ['10'], answerMode: 'numeric',
+    hint1: '子どもの年を □ とすると、お父さんは 4×□',
+    hint2: '5年後: (4□+5) = 3×(□+5) → 4□+5 = 3□+15 → □ = ?'
+  },
+];
 
 // ===== 日次キャップ管理 =====
 const DAILY_EARN_CAP = 20;    // 平日1日に獲得できる上限（分）
@@ -2188,16 +2413,17 @@ function selectMode(mode) {
   currentMode = mode;
   showScreen('difficulty-screen');
 
+  // Lv.5 (hard) is now logic puzzle → hide hard button for math modes
+  document.getElementById('diff-btn-hard').style.display = 'none';
+
   if (mode === 'big-numbers') {
     document.getElementById('diff-mode-title').textContent = '🔢 大きな数の計算';
     document.getElementById('diff-easy-desc').textContent = '2ケタの たし算・ひき算・かけ算';
     document.getElementById('diff-normal-desc').textContent = '3ケタの計算（かけ算は2ケタまで）';
-    document.getElementById('diff-hard-desc').textContent = '4ケタの計算（かけ算は3ケタまで）';
   } else {
     document.getElementById('diff-mode-title').textContent = '➗ 小数のわり算';
     document.getElementById('diff-easy-desc').textContent = '2ケタ÷1ケタの小数わり算';
     document.getElementById('diff-normal-desc').textContent = '2ケタ同士のわり算・小数÷小数';
-    document.getElementById('diff-hard-desc').textContent = '3ケタのわり算・ふくざつな小数';
   }
 
   // 日次キャップ表示を更新
@@ -2268,7 +2494,7 @@ function startGame(difficulty) {
 
   // タグ表示
   const modeNames = { 'big-numbers': '大きな数の計算', 'decimal-division': '小数のわり算' };
-  const diffNames = { easy: 'Lv.1', normal: 'Lv.3', hard: 'Lv.67' };
+  const diffNames = { easy: 'Lv.1', normal: 'Lv.3', hard: 'Lv.5' };
   document.getElementById('game-mode-tag').textContent =
     `${modeNames[currentMode]} · ${diffNames[currentDifficulty]} · ${session.requiredCorrect}問正解でクリア!`;
 
@@ -2297,7 +2523,7 @@ function generateBigNumberQuestion() {
       answer = a * b;
     }
   } else {
-    // Lv.67: 4ケタ（掛け算は3ケタまで）
+    // Lv.5: 4ケタ（掛け算は3ケタまで）
     if (op === '+') { a = randInt(1000, 9999); b = randInt(1000, 9999); answer = a + b; }
     else if (op === '-') { a = randInt(1000, 9999); b = randInt(1000, a); answer = a - b; }
     else {
@@ -2360,7 +2586,7 @@ function generateDecimalDivisionQuestion() {
       text = `${d} ÷ ${divisor}`;
     }
   } else {
-    // Lv.67: 3ケタまでの割り算（被除数は4ケタ程度まで）
+    // Lv.5: 3ケタまでの割り算（被除数は4ケタ程度まで）
     if (pattern === 0) {
       // 3ケタ÷2ケタ小数
       const divisor = pickFrom([0.3, 0.6, 0.7, 1.2, 1.5, 2.4]);
@@ -2411,13 +2637,21 @@ function nextQuestion() {
     : generateDecimalDivisionQuestion();
 
   session.currentAnswer = q.answer;
-  document.getElementById('question-text').textContent = q.text;
+  const qText = document.getElementById('question-text');
+  qText.textContent = q.text;
+  qText.classList.remove('logic-mode');
   document.getElementById('question-hint').textContent = q.hint;
 
   const input = document.getElementById('answer-input');
   input.value = '';
   input.className = 'answer-input';
+  input.setAttribute('inputmode', 'decimal');
   input.focus();
+
+  // Hide help buttons (in case returning from logic mode)
+  if (document.getElementById('help-buttons')) {
+    document.getElementById('help-buttons').style.display = 'none';
+  }
   document.getElementById('feedback').textContent = '';
   document.getElementById('feedback').className = 'feedback';
   document.getElementById('submit-btn').disabled = false;
@@ -2453,6 +2687,62 @@ function checkAnswer() {
   if (submitBtn.disabled) return;
 
   const input = document.getElementById('answer-input');
+
+  // ===== ろんりパズルモード =====
+  if (currentMode === 'logic-puzzle') {
+    if (input.value.trim() === '') {
+      input.className = 'answer-input wrong';
+      setTimeout(() => input.className = 'answer-input', 300);
+      return;
+    }
+    submitBtn.disabled = true;
+
+    const isCorrect = checkLogicAnswer(input.value, currentLogicPuzzle);
+    const fb = document.getElementById('feedback');
+    fb.style.color = '';
+
+    if (isCorrect) {
+      clearInterval(session.timerInterval);
+      session.correctCount = 1;
+      input.className = 'answer-input correct';
+
+      // XP: 18 base + 5 bonus if no hints
+      let xpGain = 18;
+      if (logicHintsUsed === 0) xpGain += 5;
+      const coinGain = Math.floor(xpGain / 2);
+      session.sessionXP += xpGain;
+      session.sessionCoins += coinGain;
+      addXP(xpGain);
+      save.totalCoins += coinGain;
+      document.getElementById('robux').textContent = save.totalCoins;
+      writeSave();
+
+      const hintMsg = logicHintsUsed === 0 ? ' (ノーヒントボーナス +5!)' : '';
+      fb.className = 'feedback correct-fb';
+      fb.innerHTML = `🎉 正解！すごい！ <span class="xp-gain">+${xpGain} XP${hintMsg}</span>`;
+      showFloatText(`+${xpGain} XP`, window.innerWidth / 2, window.innerHeight / 2);
+      hideHelpButtons();
+
+      setTimeout(() => {
+        session.resultShown = true;
+        showResult();
+      }, 2000);
+    } else {
+      // Wrong → retry (don't move on)
+      input.className = 'answer-input wrong';
+      fb.className = 'feedback wrong-fb';
+      fb.innerHTML = '❌ ちがうよ！もう一回考えてみよう！';
+      setTimeout(() => {
+        input.className = 'answer-input';
+        input.value = '';
+        submitBtn.disabled = false;
+        input.focus();
+      }, 1500);
+    }
+    return;
+  }
+
+  // ===== 通常の算数モード =====
   const userAnswer = parseFloat(input.value);
 
   if (input.value.trim() === '' || isNaN(userAnswer)) {
@@ -2604,8 +2894,8 @@ function addPlaytime(minutes) {
       save.weekendBonusPool += actual;
     }
 
-    const diffNames = { easy:'Lv.1', normal:'Lv.3', hard:'Lv.67' };
-    const modeNames = { 'big-numbers':'大きな数の計算', 'decimal-division':'小数のわり算' };
+    const diffNames = { easy:'Lv.1', normal:'Lv.3', hard:'Lv.5' };
+    const modeNames = { 'big-numbers':'大きな数の計算', 'decimal-division':'小数のわり算', 'logic-puzzle':'ろんりパズル' };
     save.history.unshift({
       date: new Date().toISOString(),
       type: 'earn',
@@ -2722,8 +3012,14 @@ function showResult() {
     failEl.style.display = 'none';
     const weekendLabel = isWeekend() ? ' 🎉×2 WEEKEND BONUS!' : '';
     document.getElementById('playtime-reward-time').textContent = `+${actualEarned}分${weekendLabel}`;
-    document.getElementById('playtime-reward-detail').textContent =
-      `${session.requiredCorrect}問正解クリア！（${session.currentQuestion}問中）`;
+    if (currentMode === 'logic-puzzle') {
+      const hintInfo = logicHintsUsed === 0 ? '（ノーヒント！）' : logicHintsUsed === 1 ? '（ヒント1回）' : '（ヒント2回）';
+      document.getElementById('playtime-reward-detail').textContent =
+        `ろんりパズル正解！${hintInfo}`;
+    } else {
+      document.getElementById('playtime-reward-detail').textContent =
+        `${session.requiredCorrect}問正解クリア！（${session.currentQuestion}問中）`;
+    }
     const balance = save.playtimeEarned - save.playtimeUsed;
     const earnRemain = getDailyEarnRemaining();
     let statusText = `ストック: ${balance}分 / ${ROLLOVER_CAP}分`;
@@ -2752,39 +3048,66 @@ function showResult() {
 
   showScreen('result-screen');
 
-  // 正解率 = 目標正解数 / 出題数
-  const rate = Math.round((session.correctCount / session.currentQuestion) * 100);
-  document.getElementById('res-correct').textContent =
-    `${session.correctCount} / ${session.currentQuestion} 問`;
-  document.getElementById('res-rate').textContent = rate + '%';
-  document.getElementById('res-combo').textContent = session.maxStreak;
-  document.getElementById('res-xp').textContent = session.sessionXP;
-  document.getElementById('res-coins').textContent = 'R$ ' + session.sessionCoins;
-
-  // 平均回答時間（10問以上あれば表示）
-  const avgRow = document.getElementById('res-avgtime-row');
-  if (save.answerTimes.length >= 10) {
-    const avg = save.answerTimes.reduce((a, b) => a + b, 0) / save.answerTimes.length;
-    const sessionAvg = session.totalAnswerTime
-      ? (session.totalAnswerTime / session.correctCount).toFixed(1)
-      : '-';
-    avgRow.style.display = 'flex';
-    document.getElementById('res-avgtime').textContent =
-      `今回 ${sessionAvg}秒 / 全体 ${avg.toFixed(1)}秒`;
-  } else {
-    avgRow.style.display = 'none';
+  // もう一回ボタンをモードに応じて設定
+  if (currentMode === 'logic-puzzle') {
+    btnPrimary.setAttribute('onclick', 'startLogicPuzzle()');
+    btnPrimary.textContent = 'もう一回パズル!';
   }
 
-  // 正解率でグレード判定（少ない問題数でクリアするほど高評価）
-  let grade, title, subtitle;
-  if (rate >= 95) { grade = '🏆'; title = 'PERFECT!'; subtitle = 'ほぼノーミス！天才だ！'; }
-  else if (rate >= 85) { grade = '⭐'; title = 'AMAZING!'; subtitle = '算数マスターだ！'; }
-  else if (rate >= 70) { grade = '👍'; title = 'GREAT!'; subtitle = 'よくがんばった！'; }
-  else { grade = '💪'; title = 'CLEAR!'; subtitle = 'さいごまでがんばったね！'; }
+  if (currentMode === 'logic-puzzle') {
+    // ろんりパズル: 簡易表示
+    document.getElementById('res-correct').textContent = '1 / 1 問';
+    document.getElementById('res-rate').textContent = '100%';
+    document.getElementById('res-combo').textContent = '-';
+    document.getElementById('res-xp').textContent = session.sessionXP;
+    document.getElementById('res-coins').textContent = 'R$ ' + session.sessionCoins;
+    document.getElementById('res-avgtime-row').style.display = 'none';
 
-  document.getElementById('result-grade').textContent = grade;
-  document.getElementById('result-title').textContent = title;
-  document.getElementById('result-subtitle').textContent = subtitle;
+    let grade, title, subtitle;
+    if (logicHintsUsed === 0) {
+      grade = '🧠'; title = 'GENIUS!'; subtitle = 'ノーヒントで正解！天才だ！';
+    } else if (logicHintsUsed === 1) {
+      grade = '🧩'; title = 'GREAT!'; subtitle = 'ヒント1回で正解！すごい！';
+    } else {
+      grade = '💪'; title = 'CLEAR!'; subtitle = 'がんばって正解できたね！';
+    }
+    document.getElementById('result-grade').textContent = grade;
+    document.getElementById('result-title').textContent = title;
+    document.getElementById('result-subtitle').textContent = subtitle;
+  } else {
+    // 通常の算数モード
+    const rate = Math.round((session.correctCount / session.currentQuestion) * 100);
+    document.getElementById('res-correct').textContent =
+      `${session.correctCount} / ${session.currentQuestion} 問`;
+    document.getElementById('res-rate').textContent = rate + '%';
+    document.getElementById('res-combo').textContent = session.maxStreak;
+    document.getElementById('res-xp').textContent = session.sessionXP;
+    document.getElementById('res-coins').textContent = 'R$ ' + session.sessionCoins;
+
+    // 平均回答時間（10問以上あれば表示）
+    const avgRow = document.getElementById('res-avgtime-row');
+    if (save.answerTimes.length >= 10) {
+      const avg = save.answerTimes.reduce((a, b) => a + b, 0) / save.answerTimes.length;
+      const sessionAvg = session.totalAnswerTime
+        ? (session.totalAnswerTime / session.correctCount).toFixed(1)
+        : '-';
+      avgRow.style.display = 'flex';
+      document.getElementById('res-avgtime').textContent =
+        `今回 ${sessionAvg}秒 / 全体 ${avg.toFixed(1)}秒`;
+    } else {
+      avgRow.style.display = 'none';
+    }
+
+    let grade, title, subtitle;
+    if (rate >= 95) { grade = '🏆'; title = 'PERFECT!'; subtitle = 'ほぼノーミス！天才だ！'; }
+    else if (rate >= 85) { grade = '⭐'; title = 'AMAZING!'; subtitle = '算数マスターだ！'; }
+    else if (rate >= 70) { grade = '👍'; title = 'GREAT!'; subtitle = 'よくがんばった！'; }
+    else { grade = '💪'; title = 'CLEAR!'; subtitle = 'さいごまでがんばったね！'; }
+
+    document.getElementById('result-grade').textContent = grade;
+    document.getElementById('result-title').textContent = title;
+    document.getElementById('result-subtitle').textContent = subtitle;
+  }
 
   spawnParticles();
 }
@@ -3310,6 +3633,151 @@ function saveAdminChanges() {
   loadAdminValues();
   document.getElementById('admin-result').textContent = '✅ 保存しました！';
   document.getElementById('admin-result').style.color = 'var(--rb-green)';
+}
+
+// ===== ろんりパズルモード =====
+let currentLogicPuzzle = null;
+let logicPuzzleStartTime = null;
+let logicHintsUsed = 0;
+
+function checkLogicAnswer(userInput, puzzle) {
+  // Normalize: fullwidth→halfwidth, trim whitespace
+  let normalized = userInput
+    .replace(/[０-９]/g, c => String.fromCharCode(c.charCodeAt(0) - 0xFEE0))
+    .replace(/[Ａ-Ｚａ-ｚ]/g, c => String.fromCharCode(c.charCodeAt(0) - 0xFEE0))
+    .replace(/\s+/g, '')
+    .trim();
+
+  if (puzzle.answerMode === 'numeric') {
+    const num = parseFloat(normalized);
+    if (isNaN(num)) return false;
+    return puzzle.answer.some(a => Math.abs(num - parseFloat(a)) < 0.001);
+  } else {
+    return puzzle.answer.some(a =>
+      a.replace(/\s+/g, '').toLowerCase() === normalized.toLowerCase()
+    );
+  }
+}
+
+function startLogicPuzzle() {
+  currentMode = 'logic-puzzle';
+  currentDifficulty = 'hard'; // reward compatibility (5 min)
+
+  session.currentQuestion = 0;
+  session.correctCount = 0;
+  session.streak = 0;
+  session.maxStreak = 0;
+  session.sessionXP = 0;
+  session.sessionCoins = 0;
+  session.totalAnswerTime = 0;
+  session.resultShown = false;
+  session.requiredCorrect = 1;
+  logicHintsUsed = 0;
+
+  document.getElementById('streak').textContent = '0';
+  document.getElementById('combo-indicator').classList.remove('show');
+  document.getElementById('game-mode-tag').textContent =
+    '🧩 ろんりパズル · Lv.5 · 1問正解でクリア!';
+
+  showScreen('game-screen');
+  nextLogicQuestion();
+}
+
+function nextLogicQuestion() {
+  session.currentQuestion = 1;
+
+  document.getElementById('question-counter').textContent =
+    '🧩 ろんりパズル　（1問チャレンジ）';
+
+  // Pick random puzzle, avoid repeat
+  let available = LOGIC_PUZZLES.filter(p => p.id !== save.lastLogicPuzzleId);
+  if (available.length === 0) available = LOGIC_PUZZLES;
+  currentLogicPuzzle = pickFrom(available);
+  save.lastLogicPuzzleId = currentLogicPuzzle.id;
+  writeSave();
+
+  // Set question (HTML)
+  const qText = document.getElementById('question-text');
+  qText.innerHTML = currentLogicPuzzle.questionHTML;
+  qText.classList.add('logic-mode');
+
+  document.getElementById('question-hint').textContent = currentLogicPuzzle.typeLabel;
+
+  // Input setup
+  const input = document.getElementById('answer-input');
+  input.value = '';
+  input.className = 'answer-input';
+  input.setAttribute('inputmode', currentLogicPuzzle.answerMode === 'numeric' ? 'decimal' : 'text');
+  input.focus();
+
+  document.getElementById('feedback').textContent = '';
+  document.getElementById('feedback').className = 'feedback';
+  document.getElementById('feedback').style.color = '';
+  document.getElementById('submit-btn').disabled = false;
+  document.getElementById('avg-time-display').textContent = '';
+
+  // M:SS timer
+  clearInterval(session.timerInterval);
+  logicPuzzleStartTime = Date.now();
+  session.questionStartTime = Date.now();
+  const swEl = document.getElementById('stopwatch');
+  swEl.textContent = '⏱ 0:00';
+  swEl.classList.remove('fast');
+  session.timerInterval = setInterval(() => {
+    const elapsed = Math.floor((Date.now() - logicPuzzleStartTime) / 1000);
+    const mins = Math.floor(elapsed / 60);
+    const secs = elapsed % 60;
+    swEl.textContent = `⏱ ${mins}:${secs.toString().padStart(2, '0')}`;
+    checkHelpButtonTiming(elapsed);
+  }, 1000);
+
+  // Reset HELP buttons
+  hideHelpButtons();
+}
+
+function hideHelpButtons() {
+  document.getElementById('help-buttons').style.display = 'none';
+  document.getElementById('help-btn').style.display = 'none';
+  document.getElementById('help-btn').disabled = false;
+  document.getElementById('help-btn').textContent = '🆘 HELP';
+  document.getElementById('really-help-btn').style.display = 'none';
+  document.getElementById('really-help-btn').disabled = false;
+  document.getElementById('really-help-btn').textContent = '🆘🆘 REALLY HELP';
+}
+
+function checkHelpButtonTiming(elapsedSeconds) {
+  const helpBtn = document.getElementById('help-btn');
+  const reallyHelpBtn = document.getElementById('really-help-btn');
+
+  if (elapsedSeconds >= 180 && helpBtn.style.display === 'none') {
+    document.getElementById('help-buttons').style.display = 'flex';
+    helpBtn.style.display = 'inline-block';
+  }
+  if (elapsedSeconds >= 360 && reallyHelpBtn.style.display === 'none') {
+    reallyHelpBtn.style.display = 'inline-block';
+  }
+}
+
+function showHint1() {
+  if (!currentLogicPuzzle) return;
+  logicHintsUsed = Math.max(logicHintsUsed, 1);
+  const fb = document.getElementById('feedback');
+  fb.className = 'feedback';
+  fb.innerHTML = '💡 ヒント: ' + currentLogicPuzzle.hint1;
+  fb.style.color = '#f5c542';
+  document.getElementById('help-btn').disabled = true;
+  document.getElementById('help-btn').textContent = '✅ HELP済み';
+}
+
+function showHint2() {
+  if (!currentLogicPuzzle) return;
+  logicHintsUsed = 2;
+  const fb = document.getElementById('feedback');
+  fb.className = 'feedback';
+  fb.innerHTML = '💡💡 スーパーヒント: ' + currentLogicPuzzle.hint2;
+  fb.style.color = '#ff6b6b';
+  document.getElementById('really-help-btn').disabled = true;
+  document.getElementById('really-help-btn').textContent = '✅ REALLY HELP済み';
 }
 
 // ===== Service Worker登録（PWA/オフライン対応） =====
